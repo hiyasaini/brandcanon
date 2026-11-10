@@ -1,0 +1,219 @@
+{
+ "note": "Hand-labelled by the team for the fictional NovaTech brand. Labels were written before running the engine; misses are reported, not hidden.",
+ "rules": [
+  {
+   "text": "Keep the tone fun and engaging.",
+   "label": "ambiguous"
+  },
+  {
+   "text": "Write in a premium voice.",
+   "label": "ambiguous"
+  },
+  {
+   "text": "Sound bold in every campaign.",
+   "label": "ambiguous"
+  },
+  {
+   "text": "Keep captions clear.",
+   "label": "ambiguous"
+  },
+  {
+   "text": "Be approachable in customer replies.",
+   "label": "ambiguous"
+  },
+  {
+   "text": "Use a modern tone.",
+   "label": "ambiguous"
+  },
+  {
+   "text": "Our voice is warm and confident.",
+   "label": "ambiguous"
+  },
+  {
+   "text": "Make headlines punchy.",
+   "label": "ambiguous"
+  },
+  {
+   "text": "Posts should feel authentic.",
+   "label": "ambiguous"
+  },
+  {
+   "text": "Keep it professional.",
+   "label": "ambiguous"
+  },
+  {
+   "text": "Use at most one emoji per post.",
+   "label": "clear"
+  },
+  {
+   "text": "Never use the word \"unbreakable\".",
+   "label": "clear"
+  },
+  {
+   "text": "Sentences must be under 25 words.",
+   "label": "clear"
+  },
+  {
+   "text": "Do not use pressure phrases such as \"buy now or regret it\".",
+   "label": "clear"
+  },
+  {
+   "text": "Text must meet a contrast ratio of at least 4.5:1.",
+   "label": "clear"
+  },
+  {
+   "text": "All images must include alternative text.",
+   "label": "clear"
+  },
+  {
+   "text": "Always write the product name in full.",
+   "label": "clear"
+  },
+  {
+   "text": "Offer posts must state the end date.",
+   "label": "clear"
+  },
+  {
+   "text": "Use conversational language with no slang and at most one emoji.",
+   "label": "clear"
+  },
+  {
+   "text": "Keep emails professional: no slang and no more than one exclamation mark.",
+   "label": "clear"
+  }
+ ],
+ "pairs": [
+  {
+   "a": "Always use formal communication.",
+   "b": "Use casual language in every social media post.",
+   "label": "conflict"
+  },
+  {
+   "a": "Make promotional content exciting and persuasive.",
+   "b": "Avoid aggressive promotional language.",
+   "label": "conflict"
+  },
+  {
+   "a": "Make every post exciting and use plenty of emojis.",
+   "b": "Use at most one emoji per post.",
+   "label": "conflict"
+  },
+  {
+   "a": "Keep it professional.",
+   "b": "Keep the tone fun.",
+   "label": "conflict"
+  },
+  {
+   "a": "Always use formal communication in emails.",
+   "b": "Use casual language on Instagram.",
+   "label": "none"
+  },
+  {
+   "a": "Use a friendly tone.",
+   "b": "Use at most one emoji per post.",
+   "label": "none"
+  },
+  {
+   "a": "Never use the word \"unbreakable\".",
+   "b": "Write \"battery life\" instead of \"battery juice\".",
+   "label": "none"
+  },
+  {
+   "a": "Be bold and exciting.",
+   "b": "Use at most one exclamation mark.",
+   "label": "none"
+  },
+  {
+   "a": "Write in a premium voice.",
+   "b": "Use slang to connect with Gen Z.",
+   "label": "conflict"
+  },
+  {
+   "a": "Keep customer emails concise.",
+   "b": "Product emails should explain every feature in detail.",
+   "label": "conflict"
+  }
+ ],
+ "claims": [
+  {
+   "text": "Enjoy guaranteed 15-hour battery life.",
+   "label": "flag"
+  },
+  {
+   "text": "Up to 12 hours of battery life under specified testing conditions.",
+   "label": "ok"
+  },
+  {
+   "text": "Get 12 hours of battery life.",
+   "label": "flag"
+  },
+  {
+   "text": "NovaTech X1 weighs just 1.2 kg.",
+   "label": "flag"
+  },
+  {
+   "text": "At 1.29 kg, NovaTech X1 is easy to carry.",
+   "label": "ok"
+  },
+  {
+   "text": "512 GB of storage for all your projects.",
+   "label": "ok"
+  },
+  {
+   "text": "1 TB of storage for all your projects.",
+   "label": "flag"
+  },
+  {
+   "text": "16 GB of memory keeps multitasking smooth.",
+   "label": "ok"
+  },
+  {
+   "text": "32 GB of memory keeps multitasking smooth.",
+   "label": "flag"
+  },
+  {
+   "text": "The most powerful laptop ever made.",
+   "label": "flag"
+  },
+  {
+   "text": "A 14-inch 2.8K OLED display.",
+   "label": "ok"
+  },
+  {
+   "text": "A 15-inch display.",
+   "label": "flag"
+  },
+  {
+   "text": "Charge to 50% in 30 minutes.",
+   "label": "ok"
+  },
+  {
+   "text": "Charge to 50% in 15 minutes.",
+   "label": "flag"
+  },
+  {
+   "text": "Always 12 hours of battery, in every situation.",
+   "label": "flag"
+  },
+  {
+   "text": "The fastest laptop on the market.",
+   "label": "flag"
+  },
+  {
+   "text": "Built for students and professionals.",
+   "label": "ok"
+  },
+  {
+   "text": "Backed by a 1 year limited warranty.",
+   "label": "ok"
+  },
+  {
+   "text": "Backed by a 2 year warranty.",
+   "label": "flag"
+  },
+  {
+   "text": "Battery that lasts up to 12 hours.",
+   "label": "ok"
+  }
+ ]
+}
