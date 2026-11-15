@@ -225,8 +225,10 @@ def render():
     if not q.list_documents(ws):
         c.empty("No brand knowledge yet", "Upload your brand guidelines, product specifications or policies (PDF or DOCX). "
                 "Extracted rules wait for your review before they are used.")
-        c.nav_button("Upload documents", "constitution", "empty_up", {"con_tab": "Upload"}, kind="primary",
-                     icon=":material/upload_file:")
+        _l, mid, _r = st.columns([1, 1, 1])
+        with mid:
+            c.nav_button("Upload documents", "constitution", "empty_up", {"con_tab": "Upload"}, kind="primary",
+                         icon=":material/upload_file:")
         return
     if ws_row["is_demo"]:
         c.illustrative()

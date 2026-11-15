@@ -390,7 +390,8 @@ button[data-testid="stBaseButton-tertiary"]:hover p {{ color: {FOREST}; }}
 .bc-code {{ font-family: {MONO}; font-size: .76rem; font-weight: 600; color: {TURQ_TEXT}; background: {TURQ_TINT}; border-radius: 6px; padding: 1px 6px; }}
 .bc-prov {{ margin: 10px 0 4px; font-size: .84rem; color: {MUTED}; }}
 .bc-illustrative {{ background: {YELLOW_TINT}; color: {YELLOW_TEXT}; border-radius: 12px; padding: 8px 14px; font-size: .82rem; }}
-.bc-empty {{ border: 1.5px dashed {MINT}; border-radius: 24px; padding: 30px; text-align: center; color: {MUTED}; background: {SOFT}; }}
+.bc-empty {{ border: 1.5px dashed {MINT}; border-radius: 24px; padding: 30px; margin-bottom: 32px; text-align: center; color: {MUTED}; background: {SOFT}; }}
+.st-key-empty_up {{ align-self: center; }}
 .bc-empty b {{ color: {TEXT}; display: block; font-family: {DISPLAY}; font-weight: 700; font-size: 1.2rem; margin-bottom: 4px; }}
 
 /* ================= evidence trail (improvement 2) ================= */
