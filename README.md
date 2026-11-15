@@ -49,10 +49,8 @@ which demo person does each step, signs you in as them with one click, and ticks
 Scope of this build against the Round 2 plan: `docs/round2_scope.md`.
 
 ## Share it as a link
-
-To let judges open BrandCanon on any device from a link, see **docs/deploy.md**: a permanent Streamlit Community Cloud
-link (about 10 minutes, once) or an instant quick tunnel from your Mac. Set `BRANDCANON_PUBLIC=1` so every visitor works
-on a private copy of the demo.
+**🔗 Live app: https://brandcanon-qjk2ly3jxclkkryucy4pks.streamlit.app/**
+Demo logins are shown on the sign-in page (Neha, Kavya and Priya, one for each role). The free hosting may take 30–60 seconds to wake up on the first visit.
 
 ## Live Gemini
 
