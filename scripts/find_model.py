@@ -33,9 +33,9 @@ def rank(name):
 
 def save(model):
     env = ROOT / ".env"
-    lines = env.read_text().splitlines() if env.exists() else []
+    lines = env.read_text(encoding="utf-8").splitlines() if env.exists() else []
     lines = [ln for ln in lines if not ln.strip().startswith("GEMINI_MODEL=")] + [f"GEMINI_MODEL={model}"]
-    env.write_text("\n".join(lines) + "\n")
+    env.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def main():
