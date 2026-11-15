@@ -38,6 +38,9 @@ def esc(x):
 # ------------------------------------------------------------------ navigation helpers
 def go(page_key, **state):
     """Navigate to another screen, opening a specific record/tab (state is read by the destination page)."""
+    if page_key not in ss.pages:
+        st.toast(f"Your role ({ss.user['role']}) does not include that screen.", icon=":material/lock:")
+        return
     for k, v in state.items():
         ss[k] = v
     st.switch_page(ss.pages[page_key])
@@ -430,3 +433,22 @@ def engine_alert(label, detail=None):
         msg = detail or gs.last_error() or "See Settings → AI and privacy for details."
         st.error(f"**Gemini did not produce this result.** {label}. {msg} "
                  "The checks shown were run by BrandCanon's deterministic logic instead.", icon=":material/cloud_off:")
+
+
+def _cookie_js(code):
+    """Run a tiny script from an invisible same-origin frame. st.iframe replaces components.html in newer Streamlit."""
+    html_ = f"<script>try{{{code}}}catch(e){{}}</script>"
+    if hasattr(st, "iframe"):
+        st.iframe(html_, height=1)
+    else:
+        import streamlit.components.v1 as components
+        components.html(html_, height=0)
+
+
+def set_cookie(name, value, seconds):
+    """Write a first-party cookie from the page itself (same origin), so a refresh can restore the sign-in."""
+    _cookie_js(f"window.parent.document.cookie='{name}={value}; Max-Age={int(seconds)}; Path=/; SameSite=Lax';")
+
+
+def clear_cookie(name):
+    _cookie_js(f"window.parent.document.cookie='{name}=; Max-Age=0; Path=/; SameSite=Lax';")

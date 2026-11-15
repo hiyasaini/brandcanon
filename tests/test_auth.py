@@ -75,3 +75,16 @@ def test_migration_from_v1_adds_password_column(tmp_path, monkeypatch):
     assert db.fetch_one("SELECT MAX(version) v FROM schema_version")["v"] == db.SCHEMA_VERSION
     assert repo.user(1)["password_hash"] is None and repo.user(1)["name"] == "Ola"
     db.reset_connections()
+
+
+def test_session_token_roundtrip_and_tampering():
+    import time
+    from modules import session_token as st_
+    user = {"id": 7, "password_hash": "abc"}
+    load = lambda i: user if i == 7 else None  # noqa: E731
+    tok = st_.issue(user)
+    assert st_.verify(tok, load) == user
+    assert st_.verify(tok + "x", load) is None and st_.verify("garbage", load) is None
+    assert st_.verify(tok, load, now=time.time() + st_.LIFETIME + 5) is None            # expired
+    assert st_.verify(tok, lambda i: {"id": 7, "password_hash": "changed"}) is None      # password changed
+    assert st_.verify(tok, lambda i: None) is None                                       # person removed

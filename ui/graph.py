@@ -1,4 +1,4 @@
-"""Brand Knowledge Graph — an interactive map of stored records and their relationships (dark investigation design).
+"""Brand Knowledge Graph — an interactive map of stored records and their relationships (light workspace design).
 
 Nodes and edges come from modules.knowledge_graph (stored records only). Clicking a node selects it through Plotly's
 point selection (st.plotly_chart on_select) and the details panel shows that record with links to its screen.
@@ -11,9 +11,17 @@ from ui import components as c
 from ui import styles as S
 
 ss = st.session_state
-CANVAS = "#14161B"
-LAYOUTS = {"Force-directed": "force", "Circular": "circular", "Hierarchical": "hierarchical", "Grid": "grid"}
+CANVAS = "#F7F9F6"
+# node colours: deeper steps of the brand hues so every type reads clearly on the light canvas
+NODE = {"document": "#C2559F", "rule": "#2A9D95", "case": "#D69A1F", "finding": "#E0626A", "decision": "#8C63D6",
+        "product": "#2F8A5F"}
+
+
+def kcol(kind):
+    return NODE.get(kind, S.ENTITY[kind][0])
+LAYOUTS = {"Radial rings": "radial", "Force-directed": "force", "Circular": "circular", "Hierarchical": "hierarchical", "Grid": "grid"}
 LABELLED = {"document", "rule", "product"}
+PILL = {"document", "product"}
 REL_COLOR = {"contains": S.PINK, "tested_by": S.YELLOW, "produces": S.CORAL, "contradicts": S.CORAL, "concerns": S.TURQUOISE,
              "supported_by": S.PINK, "resolved_through": S.LAVENDER, "applies_to": S.LAVENDER, "about": S.MINT}
 
@@ -23,10 +31,10 @@ def legend_html(kinds=None):
               "circle": "border-radius:50%", "diamond-wide": "transform:rotate(45deg) scaleX(1.3);width:9px;height:9px",
               "hexagon": "border-radius:3px"}
     out = []
-    for k, (col, sym, label) in S.ENTITY.items():
+    for k, (_, sym, label) in S.ENTITY.items():
         if kinds and k not in kinds:
             continue
-        out.append(f'<span class="bc-legend-chip"><i style="background:{col};{shapes[sym]}"></i>{c.esc(label)}</span>')
+        out.append(f'<span class="bc-legend-chip"><i style="background:{kcol(k)};{shapes[sym]}"></i>{c.esc(label)}</span>')
     return "<div>" + "".join(out) + "</div>"
 
 
@@ -46,7 +54,7 @@ def selected_from_state(key):
     return None
 
 
-def figure(G, pos, selected=None, height=620, labels="key", compact=False):
+def figure(G, pos, selected=None, height=620, labels="key", compact=False, rings=False):
     near = set()
     if selected:
         for e in G["edges"]:
@@ -55,6 +63,12 @@ def figure(G, pos, selected=None, height=620, labels="key", compact=False):
             if e["target"] == selected:
                 near.add(e["source"])
     fig = go_.Figure()
+    if rings:   # faint guide rings, one per record type present
+        kinds_here = {n["kind"] for n in G["nodes"]}
+        for kind, r in kg.RING.items():
+            if kind in kinds_here and r > 0:
+                fig.add_shape(type="circle", x0=-r * 1.35, x1=r * 1.35, y0=-r, y1=r, layer="below",
+                              line=dict(color="#DCE4DD", width=1.2, dash="dot"))
     # edges, one trace per relationship type (thin lines)
     for rel in kg.RELATIONS:
         xs, ys = [], []
@@ -67,7 +81,7 @@ def figure(G, pos, selected=None, height=620, labels="key", compact=False):
         if xs:
             hot = selected is not None
             fig.add_trace(go_.Scatter(x=xs, y=ys, mode="lines", hoverinfo="skip", showlegend=False,
-                                      line=dict(width=0.9, color=REL_COLOR[rel]), opacity=0.16 if hot else 0.42, name=rel))
+                                      line=dict(width=1.0, color="#B7C2BB"), opacity=0.2 if hot else 0.6, name=rel))
     if selected:   # the selected node's own edges, bright
         xs, ys = [], []
         for e in G["edges"]:
@@ -76,17 +90,19 @@ def figure(G, pos, selected=None, height=620, labels="key", compact=False):
                 xs += [x0, x1, None]
                 ys += [y0, y1, None]
         fig.add_trace(go_.Scatter(x=xs, y=ys, mode="lines", hoverinfo="skip", showlegend=False,
-                                  line=dict(width=1.8, color="#FFFFFF"), opacity=0.75))
+                                  line=dict(width=2.2, color=S.FOREST), opacity=0.85))
     # nodes, one trace per entity type; a node's size grows with how many records it connects to
     degree = {}
     for e in G["edges"]:
         degree[e["source"]] = degree.get(e["source"], 0) + 1
         degree[e["target"]] = degree.get(e["target"], 0) + 1
-    for kind, (col, sym, label) in S.ENTITY.items():
+    pills = []
+    for kind, (_, sym, label) in S.ENTITY.items():
+        col = kcol(kind)
         ns = [n for n in G["nodes"] if n["kind"] == kind and n["id"] in pos]
         if not ns:
             continue
-        size = {"document": 20, "rule": 15, "case": 10, "finding": 12, "decision": 12, "product": 16}[kind]
+        size = {"document": 24, "rule": 17, "case": 11, "finding": 13, "decision": 13, "product": 20}[kind]
         if compact:
             size += 6
         sizes, opac, lines, texts = [], [], [], []
@@ -97,6 +113,9 @@ def figure(G, pos, selected=None, height=620, labels="key", compact=False):
             opac.append(1.0 if (not selected or is_sel or is_near) else 0.25)
             lines.append(3 if is_sel else 1)
             show = labels == "all" or (labels == "key" and (kind in LABELLED or is_sel or is_near)) or compact
+            if show and kind in PILL and not compact and labels != "none":
+                pills.append((pos[n["id"]], _short(n["label"], 28), col, opac[-1]))   # big records get a label pill
+                show = False
             texts.append(_short(n["label"]) if show else "")
         hover = [f"<b>{c.esc(_short(n['label'], 46))}</b><br><span style='color:{col}'>●</span> {c.esc(label)} · "
                  f"{degree.get(n['id'], 0)} connection{'s' if degree.get(n['id'], 0) != 1 else ''}<br>"
@@ -106,16 +125,21 @@ def figure(G, pos, selected=None, height=620, labels="key", compact=False):
         fig.add_trace(go_.Scatter(
             x=xs, y=ys, mode="markers+text", name=label,
             text=texts, textposition="top center",
-            textfont=dict(color="#DDE1E8", size=10 if not compact else 11, shadow=f"0px 0px 3px {CANVAS}"),
+            textfont=dict(color=S.TEXT, size=11 if not compact else 12, family="Inter, Helvetica Neue, Arial, sans-serif",
+                          shadow="0px 0px 3px #FFFFFF, 0px 0px 3px #FFFFFF"),
             customdata=[n["id"] for n in ns], hovertext=hover, hoverinfo="text",
             marker=dict(symbol=sym, size=sizes, color=col, opacity=opac,
-                        line=dict(width=[3 if w == 3 else 5 for w in lines],   # a soft halo ring in the node's own colour
-                                  color=["#FFFFFF" if w == 3 else _rgba(col, 0.22 * o) for w, o in zip(lines, opac)])),
+                        line=dict(width=[3 if w == 3 else 1.6 for w in lines],   # crisp white ring; dark ring when selected
+                                  color=[S.FOREST if w == 3 else "#FFFFFF" for w in lines])),
             selected=dict(marker=dict(opacity=1)), unselected=dict(marker=dict(opacity=None))))
+    for (x, y), text, col, o in pills:
+        fig.add_annotation(x=x, y=y, text=f"<b>{c.esc(text)}</b>", showarrow=False, yshift=22, opacity=max(o, 0.35),
+                           font=dict(size=10.5, color=S.TEXT, family="Inter, Helvetica Neue, Arial, sans-serif"),
+                           bgcolor="rgba(255,255,255,0.94)", bordercolor=col, borderwidth=1.5, borderpad=4)
     fig.update_layout(height=height, margin=dict(l=4, r=4, t=4, b=4), paper_bgcolor=CANVAS, plot_bgcolor=CANVAS,
                       showlegend=False, dragmode="pan", hovermode="closest", clickmode="event+select",
-                      font=dict(family="Inter, Helvetica Neue, Arial, sans-serif", color=S.DARK_TEXT),
-                      hoverlabel=dict(bgcolor=S.DARK_PANEL, bordercolor="#3A3F4B", font=dict(color="#fff", size=12)),
+                      font=dict(family="Inter, Helvetica Neue, Arial, sans-serif", color=S.TEXT),
+                      hoverlabel=dict(bgcolor="#FFFFFF", bordercolor=S.BORDER, font=dict(color=S.TEXT, size=12)),
                       uirevision="keep")
     fig.update_xaxes(visible=False, scaleanchor=None)
     fig.update_yaxes(visible=False)
@@ -137,7 +161,7 @@ def chart(G, key, layout_kind="force", height=620, labels="key", compact=False):
     if sel not in ids:
         sel = None
     pos = kg.layout(G, layout_kind)
-    fig = figure(G, pos, sel, height, labels, compact)
+    fig = figure(G, pos, sel, height, labels, compact, rings=layout_kind == "radial")
     st.plotly_chart(fig, key=key, on_select="rerun", selection_mode="points", width="stretch",
                     config={"displayModeBar": True, "displaylogo": False, "scrollZoom": True,
                             "modeBarButtonsToRemove": ["select2d", "lasso2d", "toImage"]})
@@ -156,10 +180,10 @@ def _overview(G):
     kinds = {}
     for n in G["nodes"]:
         kinds[n["kind"]] = kinds.get(n["kind"], 0) + 1
-    rows = "".join(f"<div class='r'><div class='l'><span style='color:{S.ENTITY[k][0]}'>●</span> {c.esc(S.ENTITY[k][2])}</div>"
-                   f"<div class='b'><i style='width:{v / max(kinds.values()) * 100:.0f}%;background:{S.ENTITY[k][0]}'></i></div>"
+    rows = "".join(f"<div class='r'><div class='l'><span style='color:{kcol(k)}'>●</span> {c.esc(S.ENTITY[k][2])}</div>"
+                   f"<div class='b'><i style='width:{v / max(kinds.values()) * 100:.0f}%;background:{kcol(k)}'></i></div>"
                    f"<div class='n'>{v}</div></div>" for k, v in sorted(kinds.items(), key=lambda kv: -kv[1]) if k in S.ENTITY)
-    st.markdown(f"<div class='bc-kg-h'>In this view</div><div class='bc-rank dk'>{rows}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='bc-kg-h'>In this view</div><div class='bc-rank'>{rows}</div>", unsafe_allow_html=True)
     degree = {}
     for e in G["edges"]:
         degree[e["source"]] = degree.get(e["source"], 0) + 1
@@ -167,10 +191,10 @@ def _overview(G):
     by_id = {n["id"]: n for n in G["nodes"]}
     hubs = [(by_id[i], d) for i, d in sorted(degree.items(), key=lambda kv: -kv[1]) if i in by_id][:5]
     if hubs:
-        st.markdown("<div class='bc-kg-h'>Most connected</div><div class='bc-rank dk'>" + "".join(
-            f"<div class='r' title='{c.esc(n['label'])}'><div class='l'><span style='color:{S.ENTITY[n['kind']][0]}'>●</span> "
+        st.markdown("<div class='bc-kg-h'>Most connected</div><div class='bc-rank'>" + "".join(
+            f"<div class='r' title='{c.esc(n['label'])}'><div class='l'><span style='color:{kcol(n['kind'])}'>●</span> "
             f"{c.esc(_short(n['label'], 40))}</div><div class='b'><i style='width:{d / hubs[0][1] * 100:.0f}%;"
-            f"background:{S.ENTITY[n['kind']][0]}'></i></div><div class='n'>{d}</div></div>" for n, d in hubs)
+            f"background:{kcol(n['kind'])}'></i></div><div class='n'>{d}</div></div>" for n, d in hubs)
             + "</div>", unsafe_allow_html=True)
 
 
@@ -183,12 +207,13 @@ def details(G, nid, key):
                     unsafe_allow_html=True)
         _overview(G)
         return
-    col, _, label = S.ENTITY[n["kind"]]
+    _, _, label = S.ENTITY[n["kind"]]
+    col = kcol(n["kind"])
     st.markdown(f"<span class='bc-badge' style='background:{col}26;color:{col}'>{c.esc(n['detail'].get('Type', label))}</span>",
                 unsafe_allow_html=True)
-    st.markdown(f"<div style='font-family:{S.DISPLAY};font-weight:700;font-size:1.05rem;color:#fff;margin:2px 0 8px'>"
+    st.markdown(f"<div style='font-family:{S.DISPLAY};font-weight:700;font-size:1.05rem;color:{S.TEXT};margin:2px 0 8px'>"
                 f"{c.esc(n['label'])}</div>", unsafe_allow_html=True)
-    rows = "".join(f"<tr><td style='color:{S.DARK_MUTED};width:38%'>{c.esc(k)}</td><td>{c.esc(v)}</td></tr>"
+    rows = "".join(f"<tr><td style='color:{S.MUTED};width:38%'>{c.esc(k)}</td><td>{c.esc(v)}</td></tr>"
                    for k, v in list(n["detail"].items())[1:])
     st.markdown(f"<table class='bc-table bc-kv' style='font-size:.8rem'>{rows}</table>",
                 unsafe_allow_html=True)
@@ -203,12 +228,12 @@ def details(G, nid, key):
         for rel, arrow, m in nb:
             groups.setdefault((rel, arrow), []).append(m)
         for (rel, arrow), ms in groups.items():
-            chips = "".join(f"<span style='display:inline-flex;align-items:center;gap:5px;background:#20232B;border-radius:6px;"
+            chips = "".join(f"<span style='display:inline-flex;align-items:center;gap:5px;background:{S.SAGE_LIGHT};border-radius:6px;"
                             f"padding:1px 7px;margin:0 4px 4px 0;font-size:.74rem'><i style='width:7px;height:7px;border-radius:2px;"
-                            f"background:{S.ENTITY[m['kind']][0]}'></i>{c.esc(_short(m['label'], 30))}</span>" for m in ms[:12])
+                            f"background:{kcol(m['kind'])}'></i>{c.esc(_short(m['label'], 30))}</span>" for m in ms[:12])
             more = f"<span class='bc-muted' style='font-size:.74rem'>+{len(ms) - 12} more</span>" if len(ms) > 12 else ""
-            st.markdown(f"<div style='font-size:.76rem;color:{S.DARK_MUTED};margin:6px 0 3px'>{c.esc(rel)} {arrow} "
-                        f"<b style='color:#fff'>{len(ms)}</b></div><div>{chips}{more}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='font-size:.76rem;color:{S.MUTED};margin:6px 0 3px'>{c.esc(rel)} {arrow} "
+                        f"<b>{len(ms)}</b></div><div>{chips}{more}</div>", unsafe_allow_html=True)
 
 def _clear():
     ss.pop("kg_chart_sel", None)
@@ -217,7 +242,6 @@ def _clear():
 
 def render():
     ws, _ = c.ctx()
-    S.dark()
     c.flash()
     c.page_head("Brand Knowledge Graph", "How your documents, rules, tests, findings and decisions connect — every node is a "
                 "stored record.")
@@ -230,11 +254,13 @@ def render():
         a, b, d = st.container(key="pair-kgc1").columns([1.5, 2.6, 1.3], vertical_alignment="bottom")
         query = a.text_input("Search the graph", key="kg_q", placeholder="e.g. battery, R004, Approved")
         kind_labels = {S.ENTITY[k][2]: k for k in kg.KINDS}
-        chosen = b.pills("Entities", list(kind_labels), selection_mode="multi", default=list(kind_labels), key="kg_kinds")
+        chosen = b.pills("Entities", list(kind_labels), selection_mode="multi",   # test cases start hidden: they are many and small
+                         default=[x for x in kind_labels if kind_labels[x] != "case"], key="kg_kinds")
         lay = d.selectbox("Layout", list(LAYOUTS), key="kg_layout")
         e1, e2, e3 = st.container(key="pair-kgc2").columns([2.6, 1.2, 1.2], vertical_alignment="bottom")
         rel_labels = {v: k for k, v in kg.RELATIONS.items()}
-        rels = e1.multiselect("Relationships", list(rel_labels), default=list(rel_labels), key="kg_rels")
+        rels = e1.multiselect("Relationships", list(rel_labels), key="kg_rels",   # product links start hidden: one product touches nearly everything
+                              default=[x for x in rel_labels if rel_labels[x] != "about"])
         labels = e2.selectbox("Labels", ["Key entities", "All", "None"], key="kg_labels")
         focus_on = e3.toggle("Focus on selection", key="kg_focus", help="Show only the selected node and its direct connections.")
     kinds = [kind_labels[x] for x in (chosen or [])]
@@ -242,6 +268,13 @@ def render():
     sel_prev = selected_from_state("kg_chart") or ss.get("kg_chart_sel")
     if focus_on and sel_prev:
         sub = kg.subgraph(sub, kinds, [rel_labels[x] for x in rels], focus=sel_prev, depth=1)
+    loose = 0
+    if not query.strip() and not (focus_on and sel_prev) and len(sub["nodes"]) > 1:
+        linked = {e["source"] for e in sub["edges"]} | {e["target"] for e in sub["edges"]}
+        keep = [n for n in sub["nodes"] if n["id"] in linked]
+        if keep:   # records with no connection in this view would only float at the edges
+            loose = len(sub["nodes"]) - len(keep)
+            sub = dict(sub, nodes=keep)
     if query.strip() and not sub["seeds"]:
         st.info(f"No node matches “{query}”. Showing nothing — clear the search to see the whole graph.", icon=":material/search_off:")
     left, right = st.container(key="wrap-kg").columns([3.1, 1.15])
@@ -251,9 +284,11 @@ def render():
             c.empty("No nodes", "Every node is filtered out. Choose more entities or relationships.")
             sel = None
         else:
-            sel = chart(sub, "kg_chart", LAYOUTS[lay], 640, {"Key entities": "key", "All": "all", "None": "none"}[labels])
-        st.caption(f"{len(sub['nodes'])} of {len(G['nodes'])} nodes · {len(sub['edges'])} relationships · drag to pan, scroll or "
-                   "use + / − to zoom, double-click to reset.")
+            sel = chart(sub, "kg_chart", LAYOUTS[lay], 700, {"Key entities": "key", "All": "all", "None": "none"}[labels])
+        st.caption(f"{len(sub['nodes'])} of {len(G['nodes'])} nodes · {len(sub['edges'])} relationships"
+                   + (f" · {loose} with no connection in this view hidden" if loose else "")
+                   + " · test cases are off by default (turn them on under Entities) · drag to pan, scroll or use + / − to "
+                   "zoom, double-click to reset.")
     with right, c.card(key="panel-kgdetail"):
         st.markdown("#### Details")
         details(sub, sel, "kgd")

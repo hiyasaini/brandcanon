@@ -8,14 +8,14 @@ conflicting evidence.
 import streamlit as st
 
 import config
-from modules import approval_workflow as aw, content_audit, demo, queries as q, report_generator, rule_probe, visual_audit
+from modules import pdf_report, approval_workflow as aw, content_audit, demo, queries as q, report_generator, rule_probe, visual_audit
 from modules.document_parser import ParseError, parse
 from services import gemini_service as gs
 from services.file_service import FileRejected, validate_upload
-from ui import components as c
+from ui import components as c, visual_review
 
 ss = st.session_state
-TABS = ["Audit", "Drafts and submissions"]
+TABS = ["Audit", "Drafts and submissions", "Visual review"]
 SEV_RANK = {"high": 0, "medium": 1, "low": 2, "info": 3}
 EDITABLE = ("Draft", "Changes requested", "In review")
 TYPE_COLOR = {"Tone mismatch": "#F0CF72", "Terminology violation": "#56C9C1", "Messaging inconsistency": "#AD83EE",
@@ -130,8 +130,12 @@ def _editor(ws, user, sub, revs, rev, rep, fs):
                     st.rerun()
         else:
             b.button(f"{sub['status']}", key="status_btn", disabled=True, width="stretch")
-        st.download_button("Save report", report_generator.audit_markdown(sub["id"]), f"brandcanon_audit_{sub['id']}.md",
-                           icon=":material/download:", width="stretch", help="Downloads the audit report as Markdown.")
+        md_ = report_generator.audit_markdown(sub["id"])
+        r1, r2 = st.columns(2)
+        r1.download_button("Report PDF", pdf_report.from_markdown(md_, f"BrandCanon · content audit #{sub['id']}"), f"brandcanon_audit_{sub['id']}.pdf",
+                           "application/pdf", icon=":material/picture_as_pdf:", width="stretch", help="Downloads the audit report as a PDF.")
+        r2.download_button("Markdown", md_, f"brandcanon_audit_{sub['id']}.md", icon=":material/download:", width="stretch",
+                           help="Downloads the audit report as Markdown.")
         _rewrite(ws, user, sub, rev, fs, editable)
     if len(revs) > 1:
         with c.card():
@@ -337,6 +341,7 @@ def _current(ws, user):
 
 def _visual(ws, sub):
     with st.expander("Visual check (optional) — basic deterministic checks of a creative"):
+        st.caption("Reviewing a whole campaign? Use the Visual review tab.")
         st.caption("Checks image size for the channel, colours against the brand palette, text contrast, alt text and — if you "
                    "upload the approved logo — logo presence. Results are shown here and not stored.")
         a, b = st.columns(2)
@@ -417,3 +422,5 @@ def render():
                         "and source page it relies on, and a correction that keeps your message.")
     with t[1]:
         _list(ws, user)
+    with t[2]:
+        visual_review.render(ws, user)

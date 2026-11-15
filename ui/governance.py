@@ -176,7 +176,7 @@ def render():
         else:
             st.caption("No findings in this period.")
 
-    a, b = st.container(key="pair-g5").columns(2)
+    a, b = st.container(key="row-g5").columns(2)
     with a, c.card(key="card-grules"):
         top = Sx["rules_broken"].most_common(6)
         c.card_title("Most frequently violated rules", f"{sum(Sx['rules_broken'].values())} violations")
@@ -206,7 +206,8 @@ def render():
         else:
             st.caption("No review decisions yet.")
 
-    a, b, cc = st.container(key="pair-g6").columns(3)
+    left, cc = st.container(key="row-g6").columns(2)   # two short lists stacked on the left, the taller one on the right
+    a = b = left
     with a, c.card(key="card-gterm"):
         c.card_title("Common terminology issues")
         terms = Sx["terminology"].most_common(6)
@@ -240,7 +241,7 @@ def render():
     recs = ga.recommendations(ws, Sx)
     if not recs:
         st.caption("No recommendations: no recurring problems found in this period.")
-    cols = st.container(key="pair-g7").columns(2)
+    cols = st.container(key="row-g7").columns(2)
     for i, r in enumerate(recs):
         with cols[i % 2], c.card():
             st.markdown(f"{c.badge(ROOT_LABEL.get(r['root_cause'], r['root_cause']), 'terracotta')}"

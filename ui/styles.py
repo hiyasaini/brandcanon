@@ -124,7 +124,6 @@ FONTS = ("@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500
 
 CSS = f"""
 <style>
-{FONTS}
 /* ================= frame: sage around a large white rounded workspace ================= */
 .stApp, [data-testid="stAppViewContainer"] {{ background: {SAGE}; }}
 [data-testid="stHeader"] {{ background: transparent; height: 0; }}
@@ -193,6 +192,12 @@ button[data-testid="stBaseButton-tertiary"]:hover p {{ color: {FOREST}; }}
 [data-testid="stSidebarUserContent"] > div {{ flex: 1 0 auto; display: flex; flex-direction: column; }}
 [data-testid="stSidebarUserContent"] > div > [data-testid="stVerticalBlock"] {{ flex: 1 0 auto; gap: .3rem; }}
 [data-testid="stSidebar"] [data-testid="stLayoutWrapper"]:has(> .st-key-side-foot) {{ margin-top: auto; padding-top: 18px; }}
+/* section labels are their own block: nothing (hover or selected highlight) may slide up underneath them */
+[data-testid="stSidebar"] [data-testid="stElementContainer"]:has(.bc-navlabel),
+[data-testid="stSidebar"] [data-testid="stElementContainer"]:has(.bc-navlabel) [data-testid="stMarkdown"],
+[data-testid="stSidebar"] [data-testid="stElementContainer"]:has(.bc-navlabel) [data-testid="stMarkdownContainer"] {{
+    margin: 0 !important; height: auto !important; overflow: visible; }}
+[data-testid="stSidebar"] [data-testid="stElementContainer"]:has(.bc-navlabel) {{ margin-bottom: 8px !important; }}
 .bc-navlabel {{ display: block; font-size: .72rem; color: rgba(255,255,255,.6); font-weight: 700; letter-spacing: .1em;
                text-transform: uppercase; padding: 16px 0 6px 14px; line-height: 1.4; }}
 [data-testid="stSidebar"] [data-testid="stPageLink"], [data-testid="stSidebar"] [data-testid="stPageLink-NavLink"] {{ height: auto !important; }}
@@ -208,10 +213,28 @@ button[data-testid="stBaseButton-tertiary"]:hover p {{ color: {FOREST}; }}
 [data-testid="stSidebar"] [data-testid="stPageLink"] a[aria-current="page"] p,
 [data-testid="stSidebar"] [data-testid="stPageLink"] a[aria-current="page"] span {{ color: #fff !important; font-weight: 700; }}
 .st-key-side-foot {{ gap: 10px !important; }}
+.st-key-side-foot > *, .st-key-side-foot [data-testid="stElementContainer"] {{ flex-shrink: 0 !important; }}   /* never squeeze one card into the next */
+.st-key-side-foot [data-testid="stMarkdownContainer"] {{ margin-bottom: 0 !important; }}   /* Streamlit trims 1rem under markdown, which let the next button climb over this card */
+.bc-side-me {{ flex: 0 0 auto; box-sizing: border-box; }}
+.st-key-side_out button {{ background: transparent !important; border: 1px solid rgba(255,255,255,.3) !important; border-radius: 14px !important;
+    min-height: 40px; transition: background .15s ease, transform .15s ease; }}
+.st-key-side_out button p, .st-key-side_out button span {{ color: #fff !important; font-weight: 600; }}
+.st-key-side_out button:hover {{ background: rgba(255,255,255,.12) !important; transform: translateY(-1px); }}
+.st-key-side_out button:active {{ transform: scale(.985); }}
+.st-key-tb_out button p, .st-key-tb_out button span {{ color: #B4333C !important; }}
+@keyframes bc-drop {{ from {{ opacity: 0; }} to {{ opacity: 1; }} }}
+[data-testid="stPopoverBody"] {{ animation: bc-drop .18s ease both; border-radius: 18px !important; }}
+[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] {{ gap: .15rem !important; }}
+[data-testid="stPopoverBody"] [data-testid="stMarkdownContainer"] {{ margin-bottom: .35rem !important; }}
+[data-testid="stPopoverBody"] button[data-testid="stBaseButton-tertiary"] {{ width: 100%; justify-content: flex-start; border-radius: 10px;
+    padding: 6px 10px; min-height: 38px; transition: background-color .15s ease; }}
+[data-testid="stPopoverBody"] button[data-testid="stBaseButton-tertiary"]:hover {{ background: #F1F4F0; }}
+@media (prefers-reduced-motion: reduce) {{ [data-testid="stPopoverBody"], .st-key-side_out button {{ animation: none !important; transition: none !important; }} }}
 .bc-side-me {{ display: flex; gap: 12px; align-items: center; background: rgba(255,255,255,.08); border-radius: 18px; padding: 12px 14px; }}
 .bc-side-me .bc-avatar {{ width: 40px; height: 40px; background: {MINT}; color: {FOREST}; font-size: .9rem; }}
 .bc-side-me .n {{ color: #fff; font-weight: 700; font-size: .98rem; line-height: 1.2; }}
-.bc-side-me .r {{ color: rgba(255,255,255,.68); font-size: .78rem; line-height: 1.35; }}
+.bc-side-me .r {{ color: rgba(255,255,255,.68); font-size: .78rem; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+.bc-side-me > div:last-child {{ min-width: 0; }}
 .bc-ai {{ margin-top: 6px; background: rgba(255,255,255,.08); border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 9px; }}
 .bc-side-t {{ font-size: .72rem; color: rgba(255,255,255,.62); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }}
 .bc-ai-row {{ display: flex; gap: 10px; align-items: flex-start; }}
@@ -250,6 +273,8 @@ button[data-testid="stBaseButton-tertiary"]:hover p {{ color: {FOREST}; }}
 [class*="st-key-card-"], .st-key-chain, .st-key-library, .st-key-knowledge, .st-key-detail {{
     background: {WHITE}; border-radius: 24px !important; border-color: {BORDER} !important;
     box-shadow: 0 1px 2px rgba(16,28,22,.04), 0 6px 20px rgba(16,28,22,.04); transition: box-shadow .2s ease; }}
+[class*="st-key-card-doc-"][class*="-on"] {{ background: #EEF3EF !important; border-color: {MINT} !important;
+    box-shadow: 0 0 0 4px rgba(185,205,189,.35), 0 6px 18px rgba(16,28,22,.05) !important; }}
 [class*="st-key-tint-"] {{ background: {SAGE_LIGHT}; border-radius: 24px !important; border-color: transparent !important; }}
 [class*="st-key-forest-"] {{ background: {FOREST}; border-radius: 24px !important; border-color: transparent !important; }}
 [class*="st-key-forest-"] p, [class*="st-key-forest-"] span, [class*="st-key-forest-"] h4, [class*="st-key-forest-"] div {{ color: #EEF3EF; }}
@@ -320,7 +345,7 @@ button[data-testid="stBaseButton-tertiary"]:hover p {{ color: {FOREST}; }}
 .bc-rank .n {{ font-size: .82rem; font-weight: 700; color: {TEXT}; text-align: right; font-variant-numeric: tabular-nums;
               white-space: nowrap; }}
 
-.bc-kg-h {{ font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: {DARK_MUTED};
+.bc-kg-h {{ font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: {MUTED};
             margin: 16px 0 2px; }}
 .bc-rank.dk .l, .bc-rank.dk .n {{ color: {DARK_TEXT}; }}
 .bc-rank.dk .b {{ background: #262A33; }}
@@ -346,7 +371,7 @@ button[data-testid="stBaseButton-tertiary"]:hover p {{ color: {FOREST}; }}
     > [data-testid="stLayoutWrapper"]:last-child > [class*="st-key-card-"] {{ flex: 1 1 auto; }}
 
 [class*="st-key-pair-"] [class*="st-key-card-"] > [data-testid="stElementContainer"]:last-child:has(button),
-[class*="st-key-pair-"] [class*="st-key-card-"] > [data-testid="stLayoutWrapper"]:last-child:has(button) {{ margin-top: auto; }}
+[class*="st-key-pair-"] [class*="st-key-card-"] > [data-testid="stLayoutWrapper"]:last-child:has(button):not(:has([data-testid="stHorizontalBlock"])) {{ margin-top: auto; }}
 
 /* ================= split workspaces: side panels follow the reader down the page ================= */
 [class*="st-key-wrap-"] > [data-testid="stLayoutWrapper"] > [data-testid="stHorizontalBlock"] {{ align-items: stretch !important; }}
@@ -354,7 +379,7 @@ button[data-testid="stBaseButton-tertiary"]:hover p {{ color: {FOREST}; }}
     height: 100%; }}
 [data-testid="stLayoutWrapper"]:has(> [class*="st-key-stick-"]) {{ position: sticky; top: 14px; align-self: stretch; z-index: 3; }}
 [class*="st-key-stick-"] {{ max-height: calc(100vh - 28px); overflow-y: auto; overflow-x: hidden; scrollbar-width: thin;
-    border-radius: 24px; padding-bottom: 2px; }}
+    border-radius: 24px; padding: 1px 1px 2px; }}
 [class*="st-key-stick-"] > * {{ flex-shrink: 0; }}
 
 /* badges, text helpers */
@@ -556,7 +581,9 @@ button[data-testid="stBaseButton-tertiary"]:hover p {{ color: {FOREST}; }}
                     border-radius: 12px; padding: 0 3px; border: 2px solid transparent; }}
 .bc-split .sv-col.split {{ border-color: {YELLOW}; background: {YELLOW_TINT}; }}
 .bc-split .sv-n {{ font-family: {MONO}; font-size: .72rem; color: {MUTED}; text-align: center; }}
-.bc-split .sv-cell {{ border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 700; }}
+.bc-split .sv-cell {{ border-radius: 9px; display: flex; align-items: center; justify-content: center; gap: 5px; font-size: .68rem; font-weight: 700;
+                     letter-spacing: .03em; text-transform: uppercase; }}
+.bc-split .sv-cell i {{ width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: .75; flex: none; }}
 .bc-split .sv-pass {{ background: {GREEN_TINT}; color: {GREEN_TEXT}; }}
 .bc-split .sv-fail {{ background: {CORAL_TINT}; color: {CORAL_TEXT}; }}
 .bc-split .sv-unclear {{ background: {YELLOW_TINT}; color: {YELLOW_TEXT}; }}
@@ -594,29 +621,42 @@ button[data-testid="stBaseButton-tertiary"]:hover p {{ color: {FOREST}; }}
   .bc-ba .arrow {{ transform: rotate(90deg); }} }}
 @media (prefers-reduced-motion: reduce) {{ * {{ transition: none !important; animation: none !important; }} }}
 
-/* dark detail panel inside a light page (Decision Memory) */
-[class*="st-key-darkpanel"] {{ background: {DARK_PANEL} !important; border-color: {DARK_PANEL} !important; border-radius: 24px !important; }}
-[class*="st-key-darkpanel"] p, [class*="st-key-darkpanel"] span, [class*="st-key-darkpanel"] div, [class*="st-key-darkpanel"] label,
-[class*="st-key-darkpanel"] li {{ color: {DARK_TEXT}; }}
-[class*="st-key-darkpanel"] .bc-muted, [class*="st-key-darkpanel"] .bc-mono, [class*="st-key-darkpanel"] .bc-tl .ev .w,
-[class*="st-key-darkpanel"] .bc-tl .ev .d, [class*="st-key-darkpanel"] .bc-trail .node .k {{ color: {DARK_MUTED} !important; }}
-[class*="st-key-darkpanel"] .bc-specimen-rule, [class*="st-key-darkpanel"] .bc-trail .node .v,
-[class*="st-key-darkpanel"] .bc-tl .ev .a, [class*="st-key-darkpanel"] strong {{ color: #fff !important; }}
-[class*="st-key-darkpanel"] .bc-trail .node.missing .v {{ color: #F7A5AA !important; }}
-[class*="st-key-darkpanel"] .bc-trail .node {{ background: #20232B; border-color: {DARK_LINE}; }}
-[class*="st-key-darkpanel"] .bc-trail .link {{ border-top-color: #3A3F4B; }}
-[class*="st-key-darkpanel"] .bc-quote, [class*="st-key-darkpanel"] .bc-evidence {{ background: rgba(231,155,208,.10); }}
-[class*="st-key-darkpanel"] .bc-text {{ background: #20232B; border-color: {DARK_LINE}; color: {DARK_TEXT}; }}
-[class*="st-key-darkpanel"] .bc-diff ins {{ background: rgba(127,211,160,.18); color: #9FE3BA; }}
-[class*="st-key-darkpanel"] .bc-diff del {{ color: #F7A5AA; }}
-[class*="st-key-darkpanel"] .bc-tl {{ border-left-color: {DARK_LINE}; }}
-[class*="st-key-darkpanel"] .bc-tl .ev::before {{ background: {DARK_PANEL}; }}
-[class*="st-key-darkpanel"] .bc-badge {{ filter: none; }}
-[class*="st-key-darkpanel"] [data-testid="stExpander"] details {{ background: #20232B; border-color: {DARK_LINE} !important; }}
-[class*="st-key-darkpanel"] [data-testid="stTextInputRootElement"] {{ background: #2A2E37 !important; border-color: #3A3F4B !important; }}
-[class*="st-key-darkpanel"] input {{ color: {DARK_TEXT} !important; background: transparent !important; }}
-[class*="st-key-darkpanel"] button[data-testid="stBaseButton-tertiary"] p {{ color: {TURQUOISE} !important; }}
-[class*="st-key-darkpanel"] [data-testid="stAlert"] {{ background: rgba(240,207,114,.10); }}
+/* Streamlit trims 1rem under every markdown block; at the end of a card that ate the card's bottom padding and let content touch or cross the border */
+[class*="st-key-card-"] > [data-testid="stElementContainer"]:last-child [data-testid="stMarkdownContainer"],
+[class*="st-key-tint-"] > [data-testid="stElementContainer"]:last-child [data-testid="stMarkdownContainer"],
+[class*="st-key-card-"] > [data-testid="stVerticalBlock"] > [data-testid="stElementContainer"]:last-child [data-testid="stMarkdownContainer"],
+[class*="st-key-tint-"] > [data-testid="stVerticalBlock"] > [data-testid="stElementContainer"]:last-child [data-testid="stMarkdownContainer"] {{
+    margin-bottom: 0 !important; }}
+.bc-page {{ margin-bottom: 4px; }}
+
+.bc-page .hd {{ gap: 10px; }}
+.bc-page .hd span:first-child {{ min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
+.bc-page .hd span:last-child {{ flex: none; white-space: nowrap; }}
+
+/* ================= hover: a block lifts softly out of the background ================= */
+[class*="st-key-card-"], .st-key-chain, .st-key-library, .st-key-knowledge, .st-key-detail, .bc-metric, .bc-card, .bc-finding, .bc-step {{
+    transition: box-shadow .22s ease, border-color .22s ease, background-color .22s ease; }}
+[class*="st-key-card-"]:hover, .st-key-detail:hover, .bc-metric:hover, .bc-card:hover {{
+    border-color: #C9D8CC !important; box-shadow: 0 2px 4px rgba(16,28,22,.04), 0 14px 32px rgba(16,28,22,.09); }}
+[class*="st-key-card-"]:hover {{ background-color: #FDFEFC; }}
+.bc-finding:hover, .bc-step:hover {{ box-shadow: 0 8px 22px rgba(16,28,22,.08); }}
+.bc-row, .bc-rank .r, .bc-table tr {{ transition: background-color .18s ease; }}
+.bc-row {{ margin: 0 -10px; padding-left: 10px; padding-right: 10px; border-radius: 12px; }}
+.bc-row:hover, .bc-table tr:hover td {{ background: #F3F6F2; }}
+.bc-row .b {{ min-width: 0; flex: 1; }}
+.bc-row .t, .bc-row .s {{ white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+.bc-rank .r {{ border-radius: 10px; margin: 0 -8px; padding-left: 8px; padding-right: 8px; }}
+.bc-rank .r:hover {{ background: #F3F6F2; }}
+[data-testid="stExpander"] details {{ transition: box-shadow .2s ease, border-color .2s ease; }}
+[data-testid="stExpander"] details:hover {{ border-color: #C9D8CC; box-shadow: 0 6px 18px rgba(16,28,22,.06); }}
+[data-testid="stMain"] button[data-testid="stBaseButton-secondary"]:hover:not(:disabled) {{ box-shadow: 0 4px 12px rgba(16,28,22,.10); }}
+@media (hover: none) {{ [class*="st-key-card-"]:hover, .bc-metric:hover {{ box-shadow: inherit; }} }}
+
+/* detail panel inside a light page (Decision Memory): a soft sage surface, not a dark box */
+[class*="st-key-darkpanel"] {{ background: #F3F6F2 !important; border-color: {BORDER} !important; border-radius: 24px !important;
+                              box-shadow: 0 1px 2px rgba(16,28,22,.03); }}
+[class*="st-key-darkpanel"] .bc-trail .node, [class*="st-key-darkpanel"] .bc-text, [class*="st-key-darkpanel"] [data-testid="stExpander"] details {{
+    background: {WHITE}; }}
 </style>
 """
 
@@ -736,5 +776,5 @@ def inject():
 
 
 def dark():
-    """Switch the current page to the dark investigation design (RuleProbe, Brand Knowledge Graph)."""
-    st.markdown(DARK_CSS, unsafe_allow_html=True)
+    """Kept for compatibility: every screen now uses the light design, so this adds nothing."""
+    return None

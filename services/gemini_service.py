@@ -319,10 +319,12 @@ def _text_of(resp):
                                  "been blocked by safety filters or cut short.")
 
 
-def _call(prompt, temperature):
+def _call(prompt, temperature, image=None):
+    """`image` = (bytes, mime type): sent to Gemini together with the prompt (used for visual review)."""
     from google.genai import types
     cfg = {"temperature": temperature, "system_instruction": SYSTEM_GUARD, "response_mime_type": "application/json"}
-    resp = _client_obj().models.generate_content(model=model(), contents=prompt,
+    contents = prompt if not image else [types.Part.from_bytes(data=image[0], mime_type=image[1]), prompt]
+    resp = _client_obj().models.generate_content(model=model(), contents=contents,
                                                  config=types.GenerateContentConfig(**cfg))
     return _text_of(resp)
 
@@ -355,7 +357,7 @@ def _with_retry(fn):
             time.sleep(RETRY_DELAYS[attempt])
 
 
-def generate(prompt: str, schema, temperature: float = 0.2, cache: bool = True, check=None, _caller=None):
+def generate(prompt: str, schema, temperature: float = 0.2, cache: bool = True, check=None, _caller=None, image=None):
     """Return a validated `schema` instance. Raises GeminiError on any failure — never returns invented data.
 
     `check(obj)` may raise GeminiError for content-level problems (e.g. ungrounded numbers); it runs before caching, so a
@@ -363,7 +365,8 @@ def generate(prompt: str, schema, temperature: float = 0.2, cache: bool = True, 
     """
     if _caller is None and not enabled():
         raise not_available_error()
-    key = hashlib.sha256(f"{model()}|{temperature}|{schema.__name__}|{prompt}".encode()).hexdigest()
+    img_fp = hashlib.sha256(image[0]).hexdigest() if image else ""
+    key = hashlib.sha256(f"{model()}|{temperature}|{schema.__name__}|{img_fp}|{prompt}".encode()).hexdigest()
     if cache:
         hit = db.fetch_one("SELECT value FROM llm_cache WHERE key = ?", (key,))
         if hit:
@@ -377,7 +380,7 @@ def generate(prompt: str, schema, temperature: float = 0.2, cache: bool = True, 
                 _state["cache_hits"] += 1
                 _note_source("cache")
                 return obj
-    caller = _caller or _call
+    caller = _caller or ((lambda p, t: _call(p, t, image)) if image else _call)
     problem = ""
     for _attempt in range(2):  # one retry on malformed output
         try:

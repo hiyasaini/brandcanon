@@ -12,13 +12,13 @@ import plotly.graph_objects as go
 import streamlit as st
 
 import config
-from modules import ambiguity_detection as amb, conflict_detection, knowledge_graph as kg, queries as q, rule_probe
+from modules import pdf_report, ambiguity_detection as amb, conflict_detection, health_check, knowledge_graph as kg, queries as q, rule_probe
 from ui import components as c
 from ui import graph as kgui
 from ui import styles as S
 
 ss = st.session_state
-TABS = ["Investigation", "Conflicts", "Missing guidance", "Test history"]
+TABS = ["Investigation", "Health check", "Conflicts", "Missing guidance", "Test history"]
 CLOSED = ("approved", "rule_updated")
 VERDICT = lambda v: f"<span class='v-{v if v in ('pass', 'fail') else 'unclear'}'>{c.esc(v)}</span>"  # noqa: E731
 ASSESS_CLASS = {"Likely compliant": "v-pass", "Potential violation": "v-fail", "Uncertain": "v-unclear",
@@ -83,25 +83,25 @@ def _rule_panel(ws, rules):
         return r
 
 
-SHORT = {"pass": "✓", "fail": "✗"}
+SHORT = {"pass": "Pass", "fail": "Fail"}
 
 
 def _gauge(value, threshold):
     """Semicircle gauge for interpretation divergence, with the ambiguity threshold marked."""
     import math
     cx, cy, L = 80, 82, math.pi * 70
-    tone = S.CORAL if value >= threshold else "#7FD3A0"
+    tone = S.CH_CORAL if value >= threshold else S.CH_GREEN
     th = math.pi * (1 - threshold)
     x1, y1 = cx + 60 * math.cos(th), cy - 60 * math.sin(th)
     x2, y2 = cx + 82 * math.cos(th), cy - 82 * math.sin(th)
-    return (f'<svg viewBox="-14 -4 188 104" width="200" role="img" aria-label="Interpretation divergence {value:.0%}">'
-            f'<path d="M10,82 A70,70 0 0 1 150,82" fill="none" stroke="#2A2E37" stroke-width="13" stroke-linecap="round"/>'
+    return (f'<svg viewBox="-40 -4 240 104" width="240" role="img" aria-label="Interpretation divergence {value:.0%}">'
+            f'<path d="M10,82 A70,70 0 0 1 150,82" fill="none" stroke="#E6EBE5" stroke-width="13" stroke-linecap="round"/>'
             f'<path d="M10,82 A70,70 0 0 1 150,82" fill="none" stroke="{tone}" stroke-width="13" stroke-linecap="round" '
             f'stroke-dasharray="{max(value, 0.001) * L:.1f} {L:.1f}" class="bc-gauge-arc"/>'
-            f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" stroke="{S.YELLOW}" stroke-width="1.8"/>'
+            f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" stroke="{S.CH_AMBER}" stroke-width="2"/>'
             f'<text x="80" y="76" text-anchor="middle" font-family="Manrope, Inter, sans-serif" font-weight="800" '
-            f'font-size="30" fill="#FFFFFF">{value:.0%}</text>'
-            f'<text x="{x2 - 4:.1f}" y="{max(y2 - 7, 4):.1f}" text-anchor="end" font-size="8" fill="{S.DARK_MUTED}" '
+            f'font-size="30" fill="#242824">{value:.0%}</text>'
+            f'<text x="{x2 - 4:.1f}" y="{max(y2 - 7, 4):.1f}" text-anchor="end" font-size="8" fill="{S.MUTED}" '
             f'font-family="Inter, sans-serif">limit {threshold:.0%}</text></svg>')
 
 
@@ -113,7 +113,7 @@ def _split_view(t, cases):
         d = ("Baseline" if x["dimension"] == "baseline" else "Your case" if x["dimension"] == "manual"
              else f"{amb.dim_label(x['dimension'])} {x['level']}")
         cell = lambda v: (f"<div class='sv-cell sv-{v if v in ('pass', 'fail') else 'unclear'}'>"  # noqa: E731
-                          f"{SHORT.get(v, '?')}</div>")
+                          f"<i></i>{SHORT.get(v, 'Unclear')}</div>")
         oc = S.OUTCOME.get(x["assessment"], S.OUTCOME["Uncertain"])[2]
         cols += (f"<div class='sv-col{' split' if i in split else ''}' title='{c.esc(x['example'])} — {c.esc(x['assessment'])}'>"
                  f"<div class='sv-n'>#{i}</div>{cell(x['strict_verdict'])}{cell(x['lenient_verdict'])}"
@@ -431,6 +431,74 @@ def _action_bar(ws, user, rule, t):
 
 
 # ------------------------------------------------------------------ other tabs
+def _health_tab(ws, user):
+    """Whole-guideline health check: every rule tested in one run, ranked into one fix list, with a downloadable report."""
+    h = health_check.build(ws)
+    st.markdown("<span class='bc-muted'>One run tests every testable rule and looks for conflicts, then ranks what needs fixing "
+                "first. Every row comes from a stored test, conflict or coverage record; wordings are proposals for a Brand "
+                "Manager to accept or change.</span>", unsafe_allow_html=True)
+    a, b = st.columns([1, 3], vertical_alignment="center")
+    if user["role"] == "Brand Manager":
+        if a.button("Run health check", type="primary", icon=":material/health_and_safety:", width="stretch", key="hc_run"):
+            res = c.run_action(health_check.run, ws, user["id"])
+            if res:
+                ss["_flash"] = (f"Health check done · {res['ran']['tested']} rules tested · "
+                                f"{res['ran']['new_conflicts']} new conflict(s) recorded")
+                st.rerun()
+    else:
+        a.caption("A Brand Manager runs the check.")
+    if not h["n_tested"]:
+        b.info("No rule has been tested yet. Run the health check to test them all.", icon=":material/info:")
+    cols = st.columns(5)
+    for col, (title, val, sub) in zip(cols, [
+            ("Rules in scope", h["n_rules"], f"{h['n_tested']} tested"),
+            ("Tested and clear", h["n_clear"], "readings agree"),
+            ("Ambiguous", h["n_ambiguous"], "need clearer wording"),
+            ("Open conflicts", h["n_conflicts"], "rules or sources disagree"),
+            ("No rule for", len(h["gaps"]), "contexts")]):
+        with col:
+            c.metric(title, str(val), sub)
+    if h["untested"]:
+        st.caption("Testable but not yet tested: " + ", ".join(h["untested"]))
+    with st.expander("How the priority is worked out"):
+        st.markdown(f"Each row's score is a plain sum, shown so it can be questioned: **{health_check.FORMULA}.** "
+                    "A higher score means fix it sooner. It ranks the work; it does not say a rule is wrong.")
+    if not h["rows"]:
+        if h["n_tested"]:
+            st.success("No ambiguity, conflict or coverage issue is recorded for the tested rules.", icon=":material/task_alt:")
+    else:
+        c.card_title("Prioritised fix list", f"{len(h['rows'])} item(s), most urgent first")
+    top = max((x["score"] for x in h["rows"]), default=1) or 1
+    for x in h["rows"]:
+        with c.card(key=f"card-hc{x['rank']}"):
+            head, btn = st.columns([4, 1.2], vertical_alignment="center")
+            head.markdown(f"<span class='bc-mono'>#{x['rank']}</span> {c.code(x['code']) if x['kind'] == 'rule' else ''} "
+                          + " ".join(c.badge(i, "red" if i in ("Open conflict", "Ambiguous rule") else "amber") for i in x["issues"])
+                          + f" <span class='bc-muted'>score {x['score']}</span>"
+                          f"<div class='bc-bar' style='height:6px;margin:6px 0 2px;background:#E6EBE5'><i style='width:{x['score'] / top * 100:.0f}%;"
+                          f"background:{S.CH_CORAL}'></i></div>", unsafe_allow_html=True)
+            if x["kind"] == "rule" and btn.button("Open in RuleProbe", key=f"hc_open{x['rank']}", icon=":material/arrow_outward:",
+                                                  icon_position="right", width="stretch"):
+                c.go("ruleprobe", probe_rule=x["rule_id"])
+            st.markdown(f"<div class='bc-specimen-rule' style='font-size:1.02rem'>{c.esc(x['text'])}</div>"
+                        f"<span class='bc-muted'>Why: {c.esc('; '.join(x['why']))}</span>", unsafe_allow_html=True)
+            if x["rewording"]:
+                label = "Proposed wording" if "Ambiguous rule" in x["issues"] else "Next step"
+                st.markdown(f"<div class='bc-quote'><b>{label}.</b> {c.esc(x['rewording'])}</div>", unsafe_allow_html=True)
+                if x["engine"] and "Ambiguous rule" in x["issues"]:
+                    st.markdown(c.engine_tag(x["engine"]), unsafe_allow_html=True)
+    if h["n_tested"] or h["rows"]:
+        d1, d2, d3, _ = st.columns([1, 1, 1, 1])
+        d1.download_button("Report (PDF)", pdf_report.from_markdown(health_check.markdown(ss.get("ws_name", ""), h),
+                                                                  f"BrandCanon · guideline health report · {ss.get('ws_name', '')}"),
+                           "guideline_health_report.pdf", "application/pdf", icon=":material/picture_as_pdf:", width="stretch", key="hc_pdf",
+                           type="primary")
+        d2.download_button("Report (Markdown)", health_check.markdown(ss.get("ws_name", ""), h), "guideline_health_report.md",
+                           "text/markdown", icon=":material/download:", width="stretch", key="hc_md")
+        d3.download_button("Report (printable page)", health_check.html(ss.get("ws_name", ""), h), "guideline_health_report.html",
+                           "text/html", icon=":material/print:", width="stretch", key="hc_html")
+
+
 def _conflicts_tab(ws, user):
     open_c = q.list_conflicts(ws, "open")
     st.markdown("<span class='bc-muted'>Where sources or rules disagree, BrandCanon records the conflict and shows both sides "
@@ -515,11 +583,11 @@ def _history_tab(ws):
                                      line=dict(width=2)))
         fig.update_yaxes(title="divergence %", range=[0, 100])
         st.markdown("##### Divergence before and after clarification")
-        st.plotly_chart(c.plot_layout(fig, 240, dark=True), width="stretch", config={"displayModeBar": False})
+        st.plotly_chart(c.plot_layout(fig, 240), width="stretch", config={"displayModeBar": False})
     rows = "".join(f"<tr><td class='bc-mono'>{c.esc(r['When'])}</td><td>{c.code(r['Rule'])} v{r['Version']}</td>"
                    f"<td>{c.esc(r['Context'])}</td><td>{c.esc(r['Potential finding'])}</td>"
-                   f"<td><div class='bc-bar' style='height:7px;width:90px;display:inline-flex;background:#2A2E37'>"
-                   f"<i style='width:{r['Divergence'] * 100:.0f}%;background:{S.CORAL if r['Divergence'] >= rule_probe.AMBIGUITY_THRESHOLD else S.TURQUOISE}'></i>"
+                   f"<td><div class='bc-bar' style='height:7px;width:90px;display:inline-flex;background:#E6EBE5'>"
+                   f"<i style='width:{r['Divergence'] * 100:.0f}%;background:{S.CH_CORAL if r['Divergence'] >= rule_probe.AMBIGUITY_THRESHOLD else '#2A9D95'}'></i>"
                    f"</div> {r['Divergence']:.0%}</td><td>{c.esc(r['Investigation'])}</td></tr>"
                    for _, r in df.iloc[::-1].iterrows())
     st.markdown("<table class='bc-table'><tr><th>When</th><th>Rule</th><th>Context</th><th>Potential finding</th><th>Divergence</th>"
@@ -528,7 +596,6 @@ def _history_tab(ws):
 
 def render():
     ws, user = c.ctx()
-    S.dark()
     c.flash()
     if (rid := c.take("probe_rule")) is not None:
         ss["probe_select"], ss["probe_rule_id"], ss["probe_cat"], ss["probe_q"] = rid, rid, "All categories", ""
@@ -561,8 +628,10 @@ def render():
         if test:
             _action_bar(ws, user, rule, test)
     with t[1]:
-        _conflicts_tab(ws, user)
+        _health_tab(ws, user)
     with t[2]:
-        _gaps_tab(ws)
+        _conflicts_tab(ws, user)
     with t[3]:
+        _gaps_tab(ws)
+    with t[4]:
         _history_tab(ws)

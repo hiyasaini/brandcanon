@@ -5,7 +5,7 @@ import streamlit as st
 import config
 from modules import auth, demo, evaluation, queries as q
 from services import gemini_service as gs
-from ui import components as c
+from ui import benchmark, components as c
 
 
 @st.dialog("Reset the demonstration workspace?")
@@ -22,6 +22,7 @@ def _reset_dialog():
         same = next((u for u in q.users(ws) if u["name"] == me["name"] and u["role"] == me["role"]), None)
         if same:
             st.session_state.uid = same["id"]
+            st.session_state["_set_cookie"] = True   # the person's row was rebuilt, so their refresh token must be re-issued
         else:
             st.session_state.pop("uid", None)
         st.session_state.pop("cur_sub", None)
@@ -85,11 +86,16 @@ def render():
     c.flash()
     c.header([st.session_state.ws_name, "Settings"], "Settings",
              "Your profile and team, which AI is in use and what is sent to it, accuracy on a labelled set, and test results.")
-    names = ["Profile & people", "AI and privacy", "Accuracy", "Test results", "Demo"]
-    t = c.tabs(names, "set_tabs", "set_tab")
-    with t[0]:
+    role = user["role"]
+    names = ["Profile & people", "AI and privacy"]
+    if role in ("Reviewer", "Brand Manager"):
+        names += ["Accuracy", "Test results"]
+    if role == "Brand Manager":
+        names += ["Demo"]
+    t = dict(zip(names, c.tabs(names, "set_tabs", "set_tab")))
+    with t["Profile & people"]:
         _people_tab(ws, user)
-    with t[1]:
+    with t["AI and privacy"]:
         right = _ai_tab()
         with right, c.card():
             st.markdown("#### What happens to your data")
@@ -104,43 +110,30 @@ def render():
                         "- Passwords are stored as salted PBKDF2 hashes.\n"
                         "- BrandCanon does not publish or reject content by itself; people make final decisions.\n"
                         "- This is an MVP: no enterprise authentication or compliance certification is claimed.")
-    with t[2]:
-        st.markdown("Scores on a small, hand-labelled set written by the team for the fictional NovaTech brand (deterministic engine). "
-                    "Treat these as an early signal, not proof.")
-        demo_ws = next((w["id"] for w in q.list_workspaces() if w["name"] == demo.DEMO_NAME), None)
-        if not demo_ws:
-            st.info("Load the demo workspace first; the claim checks use NovaTech's specification.")
-        elif st.button("Run evaluation", icon=":material/play_arrow:") or "eval" in st.session_state:
-            E = st.session_state["eval"] = st.session_state.get("eval") or evaluation.run(demo_ws)
-            cols = st.columns(3)
-            for col, (k, title) in zip(cols, [("rules", "Ambiguity detection"), ("pairs", "Conflict detection"), ("claims", "Claim checking")]):
-                m = E[k]["metrics"]
-                with col:
-                    c.metric(title, f"F1 {m['f1']:.2f}", f"precision {m['precision']:.0%} · recall {m['recall']:.0%} · {len(E[k]['rows'])} items")
-            for k, title in [("rules", "Ambiguity detection"), ("pairs", "Conflict detection"), ("claims", "Claim checking")]:
-                df = pd.DataFrame(E[k]["rows"])
-                misses = df[df["pred"] != df["label"]]
-                with st.expander(f"{title}: {len(misses)} miss(es)"):
-                    st.dataframe(df, hide_index=True, width="stretch")
-    with t[3]:
-        p = config.ROOT / "docs" / "test_results.txt"
-        if p.exists():
-            st.markdown("Output of the last `pytest` run, saved by `scripts/run_tests.sh`:")
-            st.code(p.read_text()[-6000:], language="text")
-        else:
-            st.info("No recorded test run yet. Run `bash scripts/run_tests.sh`.")
-    with t[4]:
-        st.markdown(f"The **{demo.DEMO_NAME}** workspace uses a fictional brand. Its review history is created through the real "
-                    "pipeline and backdated so trends are visible; it is not customer activity.")
-        if st.button("Reset demo workspace…", icon=":material/restart_alt:"):
-            _reset_dialog()
+    if "Accuracy" in t:
+        with t["Accuracy"]:
+            benchmark.render(ws, user)
+        with t["Test results"]:
+            p = config.ROOT / "docs" / "test_results.txt"
+            if p.exists():
+                st.markdown("Output of the last `pytest` run, saved by `scripts/run_tests.sh`:")
+                st.code(p.read_text(encoding="utf-8")[-6000:], language="text")
+            else:
+                st.info("No recorded test run yet. Run `bash scripts/run_tests.sh`.")
+    if "Demo" in t:
+        with t["Demo"]:
+            st.markdown(f"The **{demo.DEMO_NAME}** workspace uses a fictional brand. Its review history is created through the real "
+                        "pipeline and backdated so trends are visible; it is not customer activity.")
+            if st.button("Reset demo workspace…", icon=":material/restart_alt:"):
+                _reset_dialog()
 
 
 def _people_tab(ws, user):
     people = q.users(ws)
     st.markdown("<table class='bc-table'><tr><th>Name</th><th>Role</th><th>Sign-in</th></tr>" + "".join(
         f"<tr><td>{c.esc(p['name'])}</td><td>{c.esc(p['role'])}</td>"
-        f"<td>{'password set' if p.get('password_hash') else 'not activated'}</td></tr>" for p in people) + "</table>",
+        f"<td>{' + '.join(x for x in (('password' if p.get('password_hash') else ''), ('Google' if p.get('email') else '')) if x) or 'not activated'}</td></tr>"
+        for p in people) + "</table>",
                 unsafe_allow_html=True)
     st.write("")
     a, b = st.columns(2)
@@ -153,9 +146,11 @@ def _people_tab(ws, user):
                 n = st.text_input("Name")
                 r = st.selectbox("Role", ["Creator", "Reviewer", "Brand Manager"])
                 pw = st.text_input("Initial password", type="password", help=f"At least {auth.MIN_LENGTH} characters. "
-                                   "Share it with the person privately.")
+                                   "Share it with the person privately. Optional if you give a Google e-mail below.")
+                em = st.text_input("Google e-mail (optional)", placeholder="name@gmail.com",
+                                   help="With this, the person can use “Continue with Google” to sign in.")
                 if st.form_submit_button("Add person", type="primary"):
-                    if c.run_action(auth.add_person, ws, user["id"], n, r, pw, success=f"{n} added as {r}"):
+                    if c.run_action(auth.add_person, ws, user["id"], n, r, pw, em, success=f"{n} added as {r}"):
                         st.rerun()
             with st.expander("Reset someone's password"):
                 others = [p for p in people if p["id"] != user["id"]]

@@ -96,3 +96,11 @@ def test_visual_audit_checks():
     ok = va.audit(buf.getvalue(), "Website", alt_text="Laptop on a desk", text_hex="#FFFFFF", bg_hex="#2E3170",
                   logo_data=lbuf.getvalue())
     assert ok["contrast"] > 4.5 and ok["logo_score"] is not None
+
+
+def test_markdown_report_becomes_a_pdf():
+    from modules import pdf_report
+    md = "# Title ‘quoted’ — dash\n\n- point **bold** and _italic_\n> a quote\n### 1. R001 · हिंदी\n\nplain"
+    pdf = pdf_report.from_markdown(md, "footer")
+    assert pdf.startswith(b"%PDF") and len(pdf) > 1500
+    assert pdf_report.from_markdown("", "f").startswith(b"%PDF")

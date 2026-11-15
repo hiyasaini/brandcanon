@@ -67,6 +67,26 @@ class AIFindings(BaseModel):
     findings: List[AIFinding] = []
 
 
+# ---------------------------------------------------------------- visual review (Gemini Vision)
+class VisionIssue(BaseModel):
+    category: Literal["Logo", "Colour", "Text in image", "Contrast", "Accessibility", "Layout", "Imagery"]
+    severity: Literal["high", "medium", "low"]
+    rule_code: Optional[str] = None
+    message: str = Field(min_length=5, max_length=400)
+    suggestion: str = Field(default="", max_length=300)
+    box: Optional[List[float]] = None   # [x, y, width, height] as fractions of the image; checked after parsing
+
+    @field_validator("rule_code")
+    @classmethod
+    def _vcode(cls, v):
+        return v if v and v.startswith("R") else None
+
+
+class VisionResult(BaseModel):
+    issues: List[VisionIssue] = []
+    text_in_image: str = Field(default="", max_length=2000)
+
+
 def validate(model, data):
     """Return a validated model instance, or None if the data does not match the schema."""
     try:

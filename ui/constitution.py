@@ -58,6 +58,7 @@ def _upload_dialog(ws, user):
                 continue
             if r.get("ai_error"):
                 msgs.append(("error", f"{f.name}: Gemini extraction failed — {r['ai_error']} Deterministic extraction was used."))
+            msgs += [(k, f"{f.name}: {m}") for k, m in r.get("notes", [])]
             if r["status"] == "empty":
                 msgs.append(("warning", f"{f.name}: no text could be extracted (it may be a scanned image). Nothing was added."))
                 continue
@@ -111,8 +112,7 @@ def _doc_card(d, n_rules, selected):
     status = d.get("review_status") or "Pending review"
     if d["status"] != "active":
         status = "Archived"
-    border = f"box-shadow:0 0 0 2px {S.FOREST} inset;" if selected else ""
-    return (f'<div style="{border}border-radius:16px;padding:2px">'
+    return (f'<div style="padding:2px">'
             f'<div class="bc-doc"><div class="ic">{c.esc(ext)}</div><div style="min-width:0"><div class="t" '
             f'style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{c.esc(d["title"])}</div>'
             f'<div class="m">{c.esc(ext)} · v{c.esc(d.get("version_label") or "1")} · {str(d.get("uploaded_at") or "")[:10]}</div>'
@@ -123,21 +123,22 @@ def _doc_card(d, n_rules, selected):
 def _library(docs, rules):
     per_doc = Counter(r["document_id"] for r in rules if r["status"] not in ("Archived", "Rejected"))
     sel = ss.get("con_doc")
-    c.card_title(f"Document library · {len(docs)}", "PDF and DOCX sources")
-    cols = st.container(key="pair-docs").columns(4)
-    with cols[0], c.card(key="card-doc-all", style="tint" if sel is None else "card"):
-        st.markdown(f'<div style="font-family:{S.DISPLAY};font-weight:800;font-size:1.6rem;color:{S.TEXT}">{len(rules)}</div>'
-                    f'<div class="bc-muted">knowledge items across all documents</div>', unsafe_allow_html=True)
-        if st.button("All knowledge", key="doc_all", type="primary" if sel is None else "secondary", width="stretch"):
-            ss["con_doc"] = None
-            st.rerun()
-    for i, d in enumerate(docs):
-        with cols[(i + 1) % 4], c.card(key=f"card-doc-{d['id']}"):
-            st.markdown(_doc_card(d, per_doc.get(d["id"], 0), sel == d["id"]), unsafe_allow_html=True)
-            if st.button("Opened" if sel == d["id"] else "Open", key=f"od{d['id']}", width="stretch",
-                         type="tertiary" if sel == d["id"] else "secondary", disabled=sel == d["id"]):
-                ss["con_doc"], ss["con_sel_rule"] = d["id"], None
-                st.rerun()
+    head, allb = st.columns([3, 1], vertical_alignment="bottom")
+    with head:
+        c.card_title(f"Document library · {len(docs)}", "PDF and DOCX sources")
+    if allb.button(f"All knowledge · {len(rules)} items", key="doc_all", type="primary" if sel is None else "secondary", width="stretch",
+                   icon=":material/select_all:"):
+        ss["con_doc"] = None
+        st.rerun()
+    for start in range(0, len(docs), 4):   # rows of four, so cards in a row share a height and nothing stacks into a tall column
+        cols = st.container(key=f"pair-docs{start}").columns(4)
+        for col, d in zip(cols, docs[start:start + 4]):
+            with col, c.card(key=f"card-doc-{d['id']}" + ("-on" if sel == d["id"] else "")):
+                st.markdown(_doc_card(d, per_doc.get(d["id"], 0), sel == d["id"]), unsafe_allow_html=True)
+                if st.button("Opened" if sel == d["id"] else "Open", key=f"od{d['id']}", width="stretch",
+                             type="tertiary" if sel == d["id"] else "secondary", disabled=sel == d["id"]):
+                    ss["con_doc"], ss["con_sel_rule"] = d["id"], None
+                    st.rerun()
 
 
 # ------------------------------------------------------------------ left: document information and preview
@@ -296,7 +297,7 @@ def _detail(ws, user, r):
         else:
             st.caption("Only a Brand Manager can approve, edit or reject rules.")
         a, b = st.columns(2)
-        if a.button("Test in RuleProbe", icon=":material/biotech:", key=f"tp{r['id']}", type="tertiary"):
+        if "ruleprobe" in ss.pages and a.button("Test in RuleProbe", icon=":material/biotech:", key=f"tp{r['id']}", type="tertiary"):
             c.go("ruleprobe", probe_rule=r["id"])
         if b.button("Show in graph", icon=":material/hub:", key=f"tg{r['id']}", type="tertiary"):
             c.go("graph", kg_q=r["code"])

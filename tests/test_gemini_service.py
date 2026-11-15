@@ -318,10 +318,10 @@ def test_no_api_keys_committed():
     hits = []
     for p in root.rglob("*"):
         if p.is_file() and not (set(p.parts) & skip) and p.name != ".env" and p.suffix in {".py", ".md", ".toml", ".txt", ".example", ".sh", ".json", ""}:
-            if pattern.search(p.read_text(errors="ignore")):
+            if pattern.search(p.read_text(encoding="utf-8", errors="ignore")):
                 hits.append(str(p))
     assert not hits, f"Possible API key committed in: {hits}"
-    gi = (root / ".gitignore").read_text()
+    gi = (root / ".gitignore").read_text(encoding="utf-8")
     assert ".env" in gi and "secrets.toml" in gi
 
 
@@ -373,3 +373,113 @@ def test_public_mode_flag_and_default_database_path(monkeypatch):
     assert config.public_mode() is True
     monkeypatch.setenv("BRANDCANON_DB", "/tmp/x_test.db")
     assert str(config.db_path()) == "/tmp/x_test.db"        # outside a Streamlit session the configured path is used
+
+
+def test_workspace_name_taken_check_for_signup(env):
+    from modules import auth
+    auth.create_workspace("Taken Co", "Asha", "Sunrise-2026-ok", "Sunrise-2026-ok")
+    assert auth.workspace_name_taken("Taken Co") and auth.workspace_name_taken("  Taken Co ")
+    assert not auth.workspace_name_taken("Free Name Ltd") and not auth.workspace_name_taken("")
+
+
+def test_google_signin_accounts(env):
+    from modules import auth
+    from modules.auth import AuthError
+    u = auth.create_workspace_google("Gcorp", "Gita Rao", "Gita@Example.com")
+    assert u["role"] == "Brand Manager" and u["email"] == "gita@example.com" and "password_hash" not in u
+    assert auth.sign_in_google("GITA@example.com")["id"] == u["id"], "e-mail is matched without regard to case"
+    with pytest.raises(AuthError):
+        auth.sign_in_google("stranger@example.com")          # an unknown e-mail never creates or joins an account
+    with pytest.raises(AuthError):
+        auth.create_workspace_google("Other", "Gita", "gita@example.com")   # e-mail already used
+    with pytest.raises(AuthError):
+        auth.create_workspace_google("Gcorp", "X", "x@example.com")         # workspace name taken
+    with pytest.raises(AuthError):
+        auth.create_workspace_google("New", "X", "not-an-email")
+    pid = auth.add_person(u["workspace_id"], u["id"], "Ravi", "Reviewer", "", "ravi@example.com")   # Google-only person
+    assert auth.sign_in_google("ravi@example.com")["id"] == pid and not auth.has_password(pid)
+    with pytest.raises(AuthError):
+        auth.add_person(u["workspace_id"], u["id"], "Ravi2", "Creator", "", "ravi@example.com")     # duplicate e-mail
+    with pytest.raises(AuthError):
+        auth.add_person(u["workspace_id"], u["id"], "NoWay", "Creator", "", "")                     # no password and no e-mail
+    with pytest.raises(AuthError):
+        auth.sign_in(pid, "anything")            # a Google-only account has no password to guess
+
+
+def test_google_buttons_only_with_full_credentials(monkeypatch):
+    import config
+    class FakeSecrets(dict):
+        pass
+    import streamlit as st
+    for secrets, expect in [({}, False),
+                            ({"auth": {"redirect_uri": "https://x/oauth2callback", "cookie_secret": "c"}}, False),
+                            ({"auth": {"redirect_uri": "https://x/oauth2callback", "cookie_secret": "c",
+                                       "google": {"client_id": "i", "client_secret": "s", "server_metadata_url": "https://m"}}}, True)]:
+        monkeypatch.setattr(st, "secrets", FakeSecrets(secrets), raising=False)
+        assert config.google_signin_ready() is expect
+
+
+def test_health_check_ranks_stored_results_and_reports(loaded):
+    from modules import health_check
+    ws, bm = loaded["ws"], loaded["bm"]
+    before = health_check.build(ws)
+    assert before["n_tested"] == 0 and before["rows"] is not None      # reading never runs a test
+    res = health_check.run(ws, bm)
+    assert res["ran"]["tested"] >= 1 and res["n_tested"] == res["ran"]["tested"]
+    rows = res["rows"]
+    scores = [r["score"] for r in rows]
+    assert scores == sorted(scores, reverse=True) and [r["rank"] for r in rows] == list(range(1, len(rows) + 1))
+    for r in rows:
+        assert r["why"] and r["score"] > 0
+        if r["kind"] == "rule":
+            assert r["code"].startswith("R") and r["text"]           # every row points at a real stored rule
+    assert res["n_ambiguous"] == sum(1 for r in rows if "Ambiguous rule" in r["issues"])
+    md, page = health_check.markdown("NovaTech", res), health_check.html("NovaTech", res)
+    assert "Prioritised fix list" in md and "<h1>Guideline health report</h1>" in page
+    with pytest.raises(PermissionError):
+        health_check.run(ws, loaded["cr"])                            # only a Brand Manager runs it
+
+
+def test_visual_review_validates_gemini_vision_output(loaded):
+    import io, json
+    from PIL import Image
+    from modules import visual_ai
+    ws = loaded["ws"]
+    im = Image.new("RGB", (800, 800), (240, 240, 240)); buf = io.BytesIO(); im.save(buf, "PNG")
+    from database import repositories as repo
+    rules = [r["code"] for r in repo.list_rules(ws, ("Approved",)) if r["category"] in visual_ai.RULE_CATEGORIES]
+    assert rules, "the sample documents give at least one visual / accessibility / claims rule"
+    seen = {}
+
+    def fake(prompt, temperature):
+        seen["prompt"] = prompt
+        return json.dumps({"issues": [
+            {"category": "Logo", "severity": "high", "rule_code": rules[0], "message": "Logo is too small.", "suggestion": "Enlarge it.", "box": [0.1, 0.1, 0.2, 0.1]},
+            {"category": "Colour", "severity": "low", "rule_code": "R999", "message": "Off-palette orange.", "suggestion": "", "box": [0.9, 0.9, 0.5, 0.5]},
+            {"category": "Layout", "severity": "medium", "rule_code": None, "message": "Text sits on a busy area.", "suggestion": "", "box": None}],
+            "text_in_image": "NovaTech guarantees 15 hours of battery life"})
+    out = visual_ai.review(ws, buf.getvalue(), "Instagram", "NovaTech X1", _caller=fake)
+    a, b, c_ = out["issues"]
+    assert a["box"] == [0.1, 0.1, 0.2, 0.1] and a["rule_code"] == rules[0]
+    assert b["rule_code"] is None and "No brand rule cited" in b["source"], "an invented rule code is dropped, not trusted"
+    assert b["box"] is None, "a box outside the image is dropped"
+    assert c_["box"] is None
+    assert any(f["classification"] == "Contradicted" for f in out["text_audit"]["findings"]), \
+        "the claim read from the image is judged by BrandCanon's own checker against approved facts"
+    png = visual_ai.annotate(buf.getvalue(), out["issues"])
+    assert png[:4] == b"\x89PNG"
+    counts = visual_ai.summarise({"findings": [("low", "x")]}, out)
+    assert counts["high"] >= 2 and counts["low"] >= 1
+    assert "R999" not in seen["prompt"]
+
+
+def test_visual_review_failure_is_raised_not_hidden(loaded):
+    import io
+    from PIL import Image
+    from modules import visual_ai
+    from services import gemini_service as gs
+    buf = io.BytesIO(); Image.new("RGB", (64, 64)).save(buf, "PNG")
+    with pytest.raises(gs.GeminiError):
+        visual_ai.review(loaded["ws"], buf.getvalue(), "Instagram")     # Gemini is off in tests: an error, never a fake result
+    with pytest.raises(gs.GeminiError):
+        visual_ai.review(loaded["ws"], buf.getvalue(), "Instagram", _caller=lambda p, t: "not json")

@@ -37,6 +37,6 @@ def render():
         with tab:
             p = config.ROOT / "docs" / fname
             if p.exists():
-                st.markdown(p.read_text())
+                st.markdown(p.read_text(encoding="utf-8"))
             else:
                 c.empty("Not found", f"docs/{fname} is missing from this installation.")

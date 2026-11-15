@@ -111,7 +111,7 @@ def _investigations(ws):
                             f"{t['divergence']:.0%} divergence · {c.INVESTIGATION_LABEL.get(t['investigation_state'], '')}",
                             t["created_at"][5:10]), unsafe_allow_html=True)
             with b:
-                go_ = _open(f"inv{i}")
+                go_ = _open(f"inv{i}") if "ruleprobe" in st.session_state.pages else False
             if go_:
                 c.go("ruleprobe", probe_rule=t["rule_id"])
 
@@ -192,6 +192,23 @@ def _attention(ws, user, S_):
                     st.caption(f"+ {len(items) - 3} more")
 
 
+ROLE_TEXT = {
+    "Brand Manager": ("Brand Manager", "You own the rulebook: upload documents, approve or edit rules, resolve conflicts, run the "
+                      "whole-guideline health check, make final calls on escalated content, add people and manage the benchmark."),
+    "Reviewer": ("Reviewer", "You decide on content sent for review (approve, request changes, escalate) and run RuleProbe tests. "
+                 "Rules are read-only for you; escalated items go to the Brand Manager. Governance Intelligence is Brand Manager only."),
+    "Creator": ("Creator", "You write content and audit it against the rules before sending it for review. You see your own "
+                "submissions and can read the Brand Constitution and decisions; RuleProbe and Governance Intelligence are for "
+                "Reviewers and Brand Managers."),
+}
+
+
+def _role_strip(role):
+    name, text = ROLE_TEXT[role]
+    st.markdown(f"<div class='bc-muted' style='margin:-4px 0 10px'><b>Signed in as {c.esc(name)}.</b> {c.esc(text)}</div>",
+                unsafe_allow_html=True)
+
+
 def render():
     ws, user = c.ctx()
     c.flash()
@@ -202,6 +219,7 @@ def render():
                 [("Upload documents", lambda: c.go("constitution", con_tab="Upload"), "secondary", ":material/upload_file:"),
                  ("New content audit", new_audit, "primary", ":material/add:")])
     ws_row = next(w for w in q.list_workspaces() if w["id"] == ws)
+    _role_strip(user["role"])
     tour.offer(ws_row)
 
     if not q.list_documents(ws):
