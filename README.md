@@ -17,7 +17,7 @@ companies on its own.
 Plus the **Brand Intelligence Overview** (with a **guided NovaTech demo**), the **Brand Knowledge Graph**, global search, **Settings** and **Help & documentation**. Flow: brand knowledge → rule testing → content auditing
 → human decisions → governance intelligence.
 
-**Design.** A premium brand-intelligence workspace in two connected languages: a sage-green frame around a large white rounded workspace for the dashboards (Overview, Constitution, Content Intelligence, Decision Memory, Governance), and a dark investigation canvas for RuleProbe and the Brand Knowledge Graph. Manrope headings, Inter for the interface, JetBrains Mono for IDs and citations; tokens in `ui/styles.py`. Turquoise, lavender, coral, yellow and pink are reserved for entity types (rules, decisions, findings, test cases, documents), so the evidence trail and the graph use the same colours everywhere.
+**Design.** A premium brand-intelligence workspace in two connected languages: a sage-green frame around a large white rounded workspace for the dashboards (Overview, Constitution, Content Intelligence, Decision Memory, Governance), with RuleProbe and the Brand Knowledge Graph in the same light design. Manrope headings, Inter for the interface, JetBrains Mono for IDs and citations; tokens in `ui/styles.py`. Turquoise, lavender, coral, yellow and pink are reserved for entity types (rules, decisions, findings, test cases, documents), so the evidence trail and the graph use the same colours everywhere.
 
 **The three improvements, visible in the product:** **RuleProbe** tests the guidelines themselves; the **Evidence Trail** links every finding to its rule, document, page and passage (and the **Brand Knowledge Graph** draws every stored relationship); **Decision Memory** retrieves earlier authorised decisions as precedent.
 
@@ -37,7 +37,7 @@ streamlit run app.py
 
 Open <http://localhost:8501>. The **sign-in page** opens first. On first launch BrandCanon builds the fictional
 **NovaTech (Demo)** workspace; every demo person signs in with the password `novatech-demo`
-(Neha · Brand Manager, Kavya · Reviewer, Priya · Creator, …). To start your own brand, use **Create a workspace** on the
+(Neha · Brand Manager, Kavya · Reviewer, Priya · Creator, …). To start your own brand, use **Sign up** on the
 sign-in page.
 
 **Windows (PowerShell):** `python -m venv .venv`, `.\.venv\Scripts\Activate.ps1`, `pip install -r requirements.txt`,
@@ -169,3 +169,10 @@ scripts/   make_sample_documents.py, run_tests.sh, run_live_tests.sh, check_gemi
   products and its people are fictional.
 
 See `docs/limitations.md` for what is not done yet.
+
+## Round 3 additions (v2.2.0)
+Health check (RuleProbe), Visual review (Content Auditor), Accuracy benchmark with importer (Settings), and optional
+"Continue with Google" sign-in (needs your own OAuth credentials: see `docs/google_signin.md`).
+Also new: scanned PDFs are read with OCR (needs Tesseract; `packages.txt` installs it on Streamlit Cloud), tables in PDFs keep
+their rows, a refresh keeps you signed in, the sign-in page shows the demo logins, and screens differ by role. Roadmap:
+`docs/roadmap.md`.

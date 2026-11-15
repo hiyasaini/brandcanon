@@ -57,6 +57,31 @@ def gemini_key():
     return None if key is None or key.lower() in PLACEHOLDER_KEYS else key
 
 
+def _app_version():
+    try:
+        return (ROOT / "VERSION").read_text(encoding="utf-8").strip() or "dev"
+    except OSError:
+        return "dev"
+
+
+APP_VERSION = _app_version()   # bumped for each release; the benchmark stores one result per version
+
+
+def google_signin_ready() -> bool:
+    """True only when Streamlit's [auth] secrets hold everything Google sign-in needs. Without them the Google buttons are
+    not shown at all, so nobody meets a button that cannot work."""
+    try:
+        import streamlit as st
+        a = st.secrets.get("auth", None)
+        if not a:
+            return False
+        g = a.get("google", a)
+        return all(g.get(k) for k in ("client_id", "client_secret", "server_metadata_url")) and \
+            bool(a.get("redirect_uri")) and bool(a.get("cookie_secret"))
+    except Exception:  # noqa: BLE001 - no secrets file, or Streamlit not running
+        return False
+
+
 def ai_provider() -> str:
     """'gemini' selects live Gemini; 'deterministic' uses application logic only. When AI_PROVIDER is not set at all,
     Gemini is switched on automatically if a key is present, so a deployment only needs GEMINI_API_KEY."""

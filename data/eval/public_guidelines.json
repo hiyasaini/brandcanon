@@ -1,0 +1,1200 @@
+{
+ "note": "Sentences from three public style guides, labelled with the written rubric below. Source text was retrieved with a web-page reader that returns passages as quoted; wording may differ slightly from the live page. Labels were assigned by Claude (AI) for the team and are awaiting human review.",
+ "rubric": {
+  "clear": "States a specific, checkable instruction: a person could say pass or fail without having to use taste (a form, a word, a number, a format, a required or forbidden choice).",
+  "ambiguous": "Depends on an undefined or subjective judgement (for example plain, warm, sparingly, where possible, unnecessary, appropriate), or states an attitude or value rather than a checkable rule."
+ },
+ "sources": [
+  {
+   "name": "Mailchimp Content Style Guide (styleguide.mailchimp.com)",
+   "items": [
+    {
+     "text": "We want to educate people without patronizing or confusing them.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "We prefer the subtle over the noisy, the wry over the farcical.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "We don't take ourselves too seriously.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Because businesses come to Mailchimp to get to work, we avoid distractions like fluffy metaphors and cheap plays to emotion.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Only experts can make what’s difficult look easy, and it’s our job to demystify B2B-speak and actually educate.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "We relate to customers’ challenges and passions and speak to them in a familiar, warm, and accessible way.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "We prefer winking to shouting.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "We’re never condescending or exclusive—we always bring our customers in on the joke.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Mailchimp’s tone is usually informal, but it’s always more important to be clear than entertaining.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "When you’re writing, consider the reader’s state of mind.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Once you have an idea of their emotional state, you can adjust your tone accordingly.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Mailchimp has a sense of humor, so feel free to be funny when it’s appropriate and when it comes naturally to you.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "But don’t go out of your way to make a joke—forced humor can be worse than none at all.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "If you’re unsure, keep a straight face.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Use active voice.",
+     "label": "clear"
+    },
+    {
+     "text": "Avoid passive voice.",
+     "label": "clear"
+    },
+    {
+     "text": "Write in plain English.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Use positive language rather than negative language.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Write for all readers.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Help everyone read better by grouping related ideas together and using descriptive headers and subheaders.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Lead with the main point or the most important content, in sentences, paragraphs, sections, and pages.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Be concise.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Use short words and sentences.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Avoid unnecessary modifiers.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Avoid vague language.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Cut the fluff.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Stick to the copy patterns and style points outlined in this guide.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "If there’s a chance your reader won’t recognize an abbreviation or acronym, spell it out the first time you mention it.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Then use the short version for all other references.",
+     "label": "clear"
+    },
+    {
+     "text": "When writing out an email address or website URL, use all lowercase.",
+     "label": "clear"
+    },
+    {
+     "text": "Don't capitalize random words in the middle of sentences.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Spell out a number when it begins a sentence.",
+     "label": "clear"
+    },
+    {
+     "text": "Otherwise, use the numeral.",
+     "label": "clear"
+    },
+    {
+     "text": "Write out big numbers in full.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Spell out fractions.",
+     "label": "clear"
+    },
+    {
+     "text": "Use a hyphen (-) to indicate a range or span of numbers.",
+     "label": "clear"
+    },
+    {
+     "text": "Use the degree symbol and the capital F abbreviation for Fahrenheit.",
+     "label": "clear"
+    },
+    {
+     "text": "Use numerals and am or pm, with a space in between.",
+     "label": "clear"
+    },
+    {
+     "text": "Don’t use minutes for on-the-hour time.",
+     "label": "clear"
+    },
+    {
+     "text": "Use a hyphen between times to indicate a time period.",
+     "label": "clear"
+    },
+    {
+     "text": "Specify time zones when writing about an event or something else people would need to schedule.",
+     "label": "clear"
+    },
+    {
+     "text": "Abbreviate decades when referring to those within the past 100 years.",
+     "label": "clear"
+    },
+    {
+     "text": "Use dashes without spaces between numbers.",
+     "label": "clear"
+    },
+    {
+     "text": "Use a country code if your reader is in another country.",
+     "label": "clear"
+    },
+    {
+     "text": "When writing a list, use the serial comma (also known as the Oxford comma).",
+     "label": "clear"
+    },
+    {
+     "text": "Use a colon (rather than an ellipsis, em dash, or comma) to offset a list.",
+     "label": "clear"
+    },
+    {
+     "text": "Use an em dash (—) without spaces on either side to offset an aside.",
+     "label": "clear"
+    },
+    {
+     "text": "Use a true em dash, not hyphens (- or --).",
+     "label": "clear"
+    },
+    {
+     "text": "Use exclamation points sparingly, and never more than one at a time.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Never use exclamation points in failure messages or alerts.",
+     "label": "clear"
+    },
+    {
+     "text": "Go easy on semicolons.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Try an em dash (—) instead, or simply start a new sentence.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Don't use ampersands unless one is part of a company or brand name.",
+     "label": "clear"
+    },
+    {
+     "text": "Use italics to indicate the title of a long work (like a book, movie, or album) or to emphasize a word.",
+     "label": "clear"
+    },
+    {
+     "text": "Don’t use underline formatting, and don’t use any combination of italic, bold, caps, and underline.",
+     "label": "clear"
+    },
+    {
+     "text": "Left-align text, never center or right-aligned.",
+     "label": "clear"
+    },
+    {
+     "text": "Leave one space between sentences, never 2.",
+     "label": "clear"
+    },
+    {
+     "text": "If you need to use a technical term, briefly define it so everyone can understand.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Don’t use “one” as a pronoun.",
+     "label": "clear"
+    },
+    {
+     "text": "When quoting someone in a blog post or other publication, use the present tense.",
+     "label": "clear"
+    },
+    {
+     "text": "Capitalize individual job titles when referencing to a specific role.",
+     "label": "clear"
+    },
+    {
+     "text": "Spell out all city and state names.",
+     "label": "clear"
+    },
+    {
+     "text": "Don’t abbreviate city names.",
+     "label": "clear"
+    }
+   ]
+  },
+  {
+   "name": "GOV.UK style guide, A to Z (guidance.publishing.service.gov.uk)",
+   "items": [
+    {
+     "text": "Use the symbol * not the word ‘star’.",
+     "label": "clear"
+    },
+    {
+     "text": "Only use title case when referring to the name of an academy, like Mossbourne Community Academy.",
+     "label": "clear"
+    },
+    {
+     "text": "Start each part of the address on a new line.",
+     "label": "clear"
+    },
+    {
+     "text": "Address the user as ‘you’ where possible and avoid using gendered pronouns like ‘he’ and ‘she’.",
+     "label": "clear"
+    },
+    {
+     "text": "Not advisor, but advisory is the correct adjective.",
+     "label": "clear"
+    },
+    {
+     "text": "Use ‘aged 4 to 16 years’, not ‘4-16 years’.",
+     "label": "clear"
+    },
+    {
+     "text": "Use allow list as the noun and allow as the verb.",
+     "label": "clear"
+    },
+    {
+     "text": "Do not use white list or whitelist.",
+     "label": "clear"
+    },
+    {
+     "text": "Use UK English spelling and grammar.",
+     "label": "clear"
+    },
+    {
+     "text": "Use the active voice rather than the passive voice.",
+     "label": "clear"
+    },
+    {
+     "text": "The first time you use an abbreviation on a page, explain it in full.",
+     "label": "clear"
+    },
+    {
+     "text": "You can then refer to it by initials only on the rest of the page.",
+     "label": "clear"
+    },
+    {
+     "text": "Do not use full stops in abbreviations: BBC, not B.B.C.",
+     "label": "clear"
+    },
+    {
+     "text": "Do not use bold in other situations, for example to emphasise text.",
+     "label": "clear"
+    },
+    {
+     "text": "Use (round brackets).",
+     "label": "clear"
+    },
+    {
+     "text": "Use numbered steps instead of bullet points to guide a user through a process.",
+     "label": "clear"
+    },
+    {
+     "text": "Steps end in a full stop because each should be a complete sentence.",
+     "label": "clear"
+    },
+    {
+     "text": "Do not abbreviate billion to b.",
+     "label": "clear"
+    },
+    {
+     "text": "Always use sentence case, even in page titles and service names.",
+     "label": "clear"
+    },
+    {
+     "text": "DO NOT USE BLOCK CAPITALS FOR LARGE AMOUNTS OF TEXT AS IT’S QUITE HARD TO READ.",
+     "label": "clear"
+    },
+    {
+     "text": "Use cannot, instead of can’t.",
+     "label": "clear"
+    },
+    {
+     "text": "Avoid negative contractions like can’t and don’t.",
+     "label": "clear"
+    },
+    {
+     "text": "Use lower case when writing about local councils in general.",
+     "label": "clear"
+    },
+    {
+     "text": "Treat as a singular noun: The data is stored on a secure server.",
+     "label": "clear"
+    },
+    {
+     "text": "Do not use a comma between the month and year - for example: 4 June 2017",
+     "label": "clear"
+    },
+    {
+     "text": "do not use ordinal numbers for the day - for example: 2 June and not 2nd June",
+     "label": "clear"
+    },
+    {
+     "text": "when mentioning a deadline, use ‘on or before’ - for example, ‘Submit the form on or before 6 September 2025’",
+     "label": "clear"
+    },
+    {
+     "text": "Refer to ethnic minority groups individually, rather than as a single group.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Never use etc at the end of a list starting with these words.",
+     "label": "clear"
+    },
+    {
+     "text": "Reference British nationals by their activity where possible, for example British tourists, British farmers.",
+     "label": "clear"
+    },
+    {
+     "text": "Do not use British nationals unless you need to refer to them in a legal context, for example in eligibility criteria.",
+     "label": "clear"
+    },
+    {
+     "text": "Use ‘critical worker’ only in relation to educational provision.",
+     "label": "clear"
+    },
+    {
+     "text": "Do not use ‘keyworker’.",
+     "label": "clear"
+    },
+    {
+     "text": "For example, say ‘use this email address’ rather than ‘use this email’.",
+     "label": "clear"
+    },
+    {
+     "text": "Write email addresses in full, in lower case and as active links.",
+     "label": "clear"
+    },
+    {
+     "text": "Do not include any other words in the link text.",
+     "label": "clear"
+    },
+    {
+     "text": "Instead use ‘for example’, ‘such as’, ‘like’ or ‘including’ - whichever works best in the specific context.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Try (re)writing sentences to avoid the need to use it.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Avoid using as it is not widely understood.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Do not use FAQs on GOV.UK.",
+     "label": "clear"
+    },
+    {
+     "text": "Use ‘fine’ instead of ‘financial penalty’.",
+     "label": "clear"
+    },
+    {
+     "text": "Only say ‘civil penalty’ if there’s evidence users are searching for the term.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Describe what the user might need to do, rather than what government calls a thing.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Make sure text is gender neutral wherever possible, such as ‘them’, ‘their’ or ‘they’.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "If you do need to refer to gender, use ‘women’ and ‘men’ rather than ‘males’ and ‘females’.",
+     "label": "clear"
+    },
+    {
+     "text": "Always use the definite article.",
+     "label": "clear"
+    },
+    {
+     "text": "Write ‘the GOV.UK app’, not ‘GOV.UK app’.",
+     "label": "clear"
+    },
+    {
+     "text": "Do not capitalise the first letter in ‘app’.",
+     "label": "clear"
+    },
+    {
+     "text": "Do not refer to GOV.UK One Login as an account.",
+     "label": "clear"
+    },
+    {
+     "text": "For signing in to a service use ‘Sign in with GOV.UK One Login’.",
+     "label": "clear"
+    },
+    {
+     "text": "Use ‘Great Britain (England, Scotland and Wales)’ in the first instance.",
+     "label": "clear"
+    },
+    {
+     "text": "Use ‘Great Britain’ in subsequent mentions on the page.",
+     "label": "clear"
+    },
+    {
+     "text": "Do not use italics.",
+     "label": "clear"
+    },
+    {
+     "text": "Use ‘single quotation marks’ if referring to a document, scheme or initiative.",
+     "label": "clear"
+    },
+    {
+     "text": "Always use the apostrophe before the ‘s’.",
+     "label": "clear"
+    },
+    {
+     "text": "When referring users to the folder in their email client, use ‘junk or spam folder’.",
+     "label": "clear"
+    },
+    {
+     "text": "If you have to publish legal jargon, it will be a publication so write a plain English summary.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Front-load your link text with the relevant terms and make them active and specific.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Always link to online services first.",
+     "label": "clear"
+    },
+    {
+     "text": "Offer offline alternatives afterwards, when possible.",
+     "label": "clear"
+    },
+    {
+     "text": "Lists should be bulleted to make them easier to read.",
+     "label": "clear"
+    },
+    {
+     "text": "When referring to local government, use local council instead of local authority where possible.",
+     "label": "clear"
+    },
+    {
+     "text": "Use the minus sign for subtraction.",
+     "label": "clear"
+    },
+    {
+     "text": "Use the correct symbol for the multiplication sign (×), not the letter x.",
+     "label": "clear"
+    },
+    {
+     "text": "Use numerals and spell out measurements at first mention.",
+     "label": "clear"
+    },
+    {
+     "text": "Do not use a space between the numeral and abbreviated measurement: 3,500kg not 3,500 kg.",
+     "label": "clear"
+    },
+    {
+     "text": "If it’s only mentioned once, do not abbreviate.",
+     "label": "clear"
+    },
+    {
+     "text": "Use ‘grams’ (not ‘grammes’).",
+     "label": "clear"
+    },
+    {
+     "text": "Use Celsius for temperature: 37°C",
+     "label": "clear"
+    },
+    {
+     "text": "Always use million in money (and billion): £138 million.",
+     "label": "clear"
+    },
+    {
+     "text": "Do not abbreviate million to m.",
+     "label": "clear"
+    },
+    {
+     "text": "Use millions in phrases: millions of people.",
+     "label": "clear"
+    },
+    {
+     "text": "Use the full title when referring to a named minister, for example: Minister for Overseas Development, Joe Bloggs.",
+     "label": "clear"
+    },
+    {
+     "text": "Do not use the shortened title with a name, like Minister Bloggs.",
+     "label": "clear"
+    },
+    {
+     "text": "Do not use Member of Parliament, just MP.",
+     "label": "clear"
+    },
+    {
+     "text": "Do not use decimals unless pence are included: £75.50 but not £75.00",
+     "label": "clear"
+    },
+    {
+     "text": "Do not use N/A in empty cells in tables.",
+     "label": "clear"
+    },
+    {
+     "text": "Use a person’s full name the first time you mention them.",
+     "label": "clear"
+    },
+    {
+     "text": "Only include personal titles if they’re relevant to your content.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Avoid using titles from other languages, like ‘Herr’ or ‘Madame’.",
+     "label": "clear"
+    },
+    {
+     "text": "If they’re a member of the House of Lords, use their official title instead.",
+     "label": "clear"
+    },
+    {
+     "text": "For numerals over 999, insert a comma for clarity: 9,000.",
+     "label": "clear"
+    },
+    {
+     "text": "Write out and hyphenate fractions: two-thirds, three-quarters.",
+     "label": "clear"
+    },
+    {
+     "text": "Write out decimal fractions as numerals.",
+     "label": "clear"
+    },
+    {
+     "text": "Use a % sign for percentages: 50%.",
+     "label": "clear"
+    },
+    {
+     "text": "Use a 0 where there’s no digit before the decimal point (for example, 0.5 not .5).",
+     "label": "clear"
+    },
+    {
+     "text": "Use a minus sign for negative numbers: –6",
+     "label": "clear"
+    },
+    {
+     "text": "Use ‘zero degrees’ not ‘0 degrees’ or 0°.",
+     "label": "clear"
+    },
+    {
+     "text": "Use ‘500 to 900’ and not ‘500-900’ (except in tables).",
+     "label": "clear"
+    },
+    {
+     "text": "Use MB for anything over 1MB: 4MB not 4096KB.",
+     "label": "clear"
+    },
+    {
+     "text": "Use KB for anything under 1MB: 569KB not 0.55MB.",
+     "label": "clear"
+    },
+    {
+     "text": "Keep it as accurate as possible and up to 2 decimal places: 4.03MB.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "In tables, use numerals throughout.",
+     "label": "clear"
+    },
+    {
+     "text": "Do not use ordinal numbers when writing out dates.",
+     "label": "clear"
+    },
+    {
+     "text": "Use the singular verb form when referring to organisations by name.",
+     "label": "clear"
+    },
+    {
+     "text": "Use ‘they’ when replacing an organisation name with a pronoun.",
+     "label": "clear"
+    },
+    {
+     "text": "You should only use ‘we’ if it’s clear which organisation you’re referring to.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Do not use slashes instead of ‘or’.",
+     "label": "clear"
+    },
+    {
+     "text": "If an online service has a name that starts with a verb, you do not need to capitalise its name when linking to it.",
+     "label": "clear"
+    },
+    {
+     "text": "Write the link as part of a sentence so users know what action they can take.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "If used adjectivally, hyphenate and use one rather than 1.",
+     "label": "clear"
+    },
+    {
+     "text": "If you ever need to describe what the user is actually interacting with, use ‘page’.",
+     "label": "clear"
+    },
+    {
+     "text": "Do not use ‘screen’ unless you’re referring to part of a device, for example ‘the oval on your screen’.",
+     "label": "clear"
+    },
+    {
+     "text": "Do not use proforma - say what it is in plain English: a template or form, for example.",
+     "label": "clear"
+    },
+    {
+     "text": "There’s usually no need to say ‘please’ or ‘please note’.",
+     "label": "clear"
+    },
+    {
+     "text": "Use ‘per cent’ not ‘percent’.",
+     "label": "clear"
+    },
+    {
+     "text": "Use lower case for both ‘public limited company’ and ‘plc’.",
+     "label": "clear"
+    },
+    {
+     "text": "Use single quotes for unusual terms that users might not recognise but still need to know.",
+     "label": "clear"
+    },
+    {
+     "text": "Only use double quotes in body text for direct quotations of something that a person has said or written.",
+     "label": "clear"
+    },
+    {
+     "text": "Use block quotes for quotes longer than a few sentences.",
+     "label": "clear"
+    },
+    {
+     "text": "Use ‘settlor’, not settler, when referring to a person who puts assets into a trust.",
+     "label": "clear"
+    },
+    {
+     "text": "Do not use semicolons as they are often mis-read.",
+     "label": "clear"
+    },
+    {
+     "text": "Long sentences using semicolons should be broken up into separate sentences instead.",
+     "label": "clear"
+    },
+    {
+     "text": "Check sentences with more than 25 words to see if you can split them to make them clearer.",
+     "label": "clear"
+    },
+    {
+     "text": "Use sign in rather than log in (verb) for calls-to-action where users enter their details to access a service.",
+     "label": "clear"
+    },
+    {
+     "text": "Do not use login as a noun - say what the user actually needs to enter (like username, password, National Insurance number).",
+     "label": "clear"
+    },
+    {
+     "text": "Use technical terms where you need to.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Use Self Assessment tax return at first mention, as it’s not a proper title.",
+     "label": "clear"
+    },
+    {
+     "text": "Before the number, add ‘Telephone:’ or ‘Mobile phone:’ – do not use ‘Mobile:’ or ‘Mob:’.",
+     "label": "clear"
+    },
+    {
+     "text": "When writing out a number, separate out the area, freephone, mobile or international code from the rest of the number.",
+     "label": "clear"
+    },
+    {
+     "text": "If the number is memorable, group the numbers into easily remembered units.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Avoid using trademarked names where possible - so tablet not iPad.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Use ‘WhatsApp’ with an title case A.",
+     "label": "clear"
+    },
+    {
+     "text": "Use ‘Withdrawal Agreement’ if you’re referring to the legal document.",
+     "label": "clear"
+    },
+    {
+     "text": "Do not link to further information about the withdrawal agreement from guidance content.",
+     "label": "clear"
+    },
+    {
+     "text": "Avoid using metaphors - they do not say what you actually mean and lead to slower comprehension of your content.",
+     "label": "ambiguous"
+    }
+   ]
+  },
+  {
+   "name": "Microsoft Windows app and UX writing guidance (learn.microsoft.com)",
+   "items": [
+    {
+     "text": "Be informal, be casual, and don't use terms they won't understand.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Even when things break, don't blame the user for any problems.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Your app should take responsibility instead, and offer welcoming guidance that puts the user's actions first.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Always show empathy in your writing.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Be focused on explaining what's going on and providing the information that the user needs, without overloading them with unnecessary info.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "And if possible, always provide a solution when there's a problem.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Use language that is familiar to your audience, make sure it's easy to understand at a glance.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Don't pad your words with unnecessary introductions.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Give your key points the most visibility, and always present the core of an idea before you add onto it.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Make sure your text uses the *active voice* throughout your app.",
+     "label": "clear"
+    },
+    {
+     "text": "Don't sacrifice necessary information and presentation, but don't use more words than you have to.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Always address the user as \"you.\"",
+     "label": "clear"
+    },
+    {
+     "text": "Use \"we\" to refer to your own perspective.",
+     "label": "clear"
+    },
+    {
+     "text": "Don't use \"I\" or \"me\" to refer to the app's perspective, even if you're the only one creating it.",
+     "label": "clear"
+    },
+    {
+     "text": "Don't assume that users are already familiar with any abbreviations, even if you think they're common.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Always define what a new abbreviation means the first time the user will see it.",
+     "label": "clear"
+    },
+    {
+     "text": "Don't use abbreviations that are too similar to one another.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Don't use abbreviations if you're localizing your app, or if your users speak English as a second language.",
+     "label": "clear"
+    },
+    {
+     "text": "Use contractions when they're a natural fit for the text.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Don't use unnatural contractions just to save space, or when they would make your words sound less conversational.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Use periods to end full sentences in tooltips, error messages, and dialogs.",
+     "label": "clear"
+    },
+    {
+     "text": "Don't end text for buttons, radio buttons, labels, or checkboxes with a period.",
+     "label": "clear"
+    },
+    {
+     "text": "Capitalize proper nouns.",
+     "label": "clear"
+    },
+    {
+     "text": "Capitalize the start of every string of text in your app: the start of every sentence, label, and title.",
+     "label": "clear"
+    },
+    {
+     "text": "More than anything else, it's important that your error message doesn't blame the user.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Be warm and relaxed by using a conversational tone and avoiding unfamiliar terms and technical jargon.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Be ready to lend a hand by telling the user what went wrong to the best of your ability, by telling them what will happen next, and by providing a realistic solution they can accomplish.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Be crisp and clear by eliminating extraneous information.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Make sure that your buttons are clear answers to the question posed by the title, and that their format is consistent across your app.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "The longest the text on a button should ever be is a couple short words, and many should be shorter than that.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Be sure to use the *active voice* in button text, to use words that represent actions rather than reactions.",
+     "label": "clear"
+    },
+    {
+     "text": "Be warm and relaxed by engaging your users with a conversational tone.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Be ready to lend a hand by providing alternative suggestions when the user asks the impossible.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Be crisp and clear by keeping your language simple.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Avoid phrases that might not make sense to an international audience, and don't use words that make assumptions about what the user can and can't do.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Be crisp and clear by avoiding unusual and specialized words when they aren't necessary.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "We want our documentation to have a conversational tone.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Please write in second person.",
+     "label": "clear"
+    },
+    {
+     "text": "Write your articles as though you are speaking directly to the reader.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Write directly to the reader.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Write imperative sentences.",
+     "label": "clear"
+    },
+    {
+     "text": "Tell your reader what you want them to learn.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Write your articles in active voice.",
+     "label": "clear"
+    },
+    {
+     "text": "Whenever you introduce a new concept to the reader, define the concept and only then explain why it's useful.",
+     "label": "clear"
+    },
+    {
+     "text": "Avoid future tense",
+     "label": "clear"
+    },
+    {
+     "text": "Use the Windows tone to inspire confidence by communicating to users on a personal level by being accurate, encouraging, insightful, objective, and user-focused.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Don't use a distracting, condescending, or arrogant tone.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Avoid the extremes of the \"machine\" voice (where the speaker is removed from the language) and the \"sales rep\" voice (where the writing tries to sell us something, to cajole us, to cheer us up, to gloss over everything as \"simple.\")",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Support users with different levels of technical knowledge, especially novice users, to take advantage of all the things your program can do.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Make sure that your text is accurate, encouraging, insightful, objective, and user-focused.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Be straightforward and trustworthy, and where appropriate use a light and inspiring tone.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "For example, use \"you can\" rather than \"Windows lets you\" or \"this feature allows you.\"",
+     "label": "clear"
+    },
+    {
+     "text": "At the same time, treat users as intelligent people who happen to need help with a particular problem.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Write from the user's perspective and preferably from the perspective of what you can do for the user.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Use everyday words when you can and avoid words you wouldn't say to someone else in person.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Use short, plain words whenever possible.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Don't invent words or apply new meanings to standard words.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "When an industry term is required, provide an in-context definition.",
+     "label": "clear"
+    },
+    {
+     "text": "Avoid jargon, but remember that some expressions specific to computer usage—hacker, burn a CD, and so on—are already part of everyday speech.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Don't use symbols as a substitute for simple words.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Choose words with a clear meaning.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Omit needless words—don't use two or three words when one will do.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Avoid unnecessary adverbs.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Choose single-word verbs over multi-word verbs.",
+     "label": "clear"
+    },
+    {
+     "text": "Don't convert verbs to nouns and nouns to verbs.",
+     "label": "clear"
+    },
+    {
+     "text": "Don't use contractions with product names or other proper nouns.",
+     "label": "clear"
+    },
+    {
+     "text": "Consider using colloquialisms or slang only in special situations, such as product tours, setup screens, or content that won't be localized.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Address the user as you, directly or indirectly.",
+     "label": "clear"
+    },
+    {
+     "text": "Use the second person (you, your) to tell users what to do.",
+     "label": "clear"
+    },
+    {
+     "text": "Use the first person (I, me, my) to let users tell the program what to do.",
+     "label": "clear"
+    },
+    {
+     "text": "Use we judiciously.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Use we recommend rather than it is recommended.",
+     "label": "clear"
+    },
+    {
+     "text": "Avoid third-person references (the user) because they create a more formal, less personal tone.",
+     "label": "clear"
+    },
+    {
+     "text": "Use the active voice, which emphasizes the person or thing doing the action.",
+     "label": "clear"
+    },
+    {
+     "text": "Use the passive voice only to avoid a wordy or awkward construction; when the action rather than the doer is the focus of the sentence; when the subject is unknown; or in error messages, when the user is the subject and might feel blamed for the error if the active voice were used.",
+     "label": "clear"
+    },
+    {
+     "text": "Phrase statements in the positive form, and emphasize what users can accomplish, rather than what they can't.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Be polite, supportive, and encouraging.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Strike the right balance: be warm toward the user without being too intimate or too business-like.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Limit please to situations that inconvenience the user in some way,",
+     "label": "ambiguous"
+    },
+    {
+     "text": "You should also use please whenever its absence would be considered curt.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Use sorry only in error messages that result in serious problems for the user (for example, data loss, the user can't continue to use the computer, or the user must get help from a technical representative).",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Don't apologize if the issue occurred during the normal functioning of the program (for example, if the user needs to wait for a network connection to be found).",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Use your best judgment—make sentences tight, but not so tight that the tone seems abrupt and unfriendly.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Avoid repetition.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Review each window and eliminate duplicate words and statements.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Don't avoid important text—be explicit whenever necessary—but don't be redundant and don't explain things that go without saying.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Start sentences with conjunctions (and, but, or) if you need to.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Substitute lists and tables for complex sentences.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Use parallel grammatical constructions.",
+     "label": "clear"
+    },
+    {
+     "text": "Use parallel language whenever you express ideas of equal weight, and for UI elements that are parallel in function (such as headings, labels, lists, or page titles).",
+     "label": "ambiguous"
+    },
+    {
+     "text": "We make it simple above all.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "We show customers we’re on their side.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "We anticipate their real needs and offer great information at just the right time.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Simpler is better.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Get to the point fast.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Start with the key takeaway.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Put the most important thing in the most noticeable spot.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Make choices and next steps obvious.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Give people just enough information to make decisions confidently.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Don’t get in the way.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Talk like a person.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Choose optimistic, conversational language.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Use short everyday words, contractions, and sentence-style capitalization.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Shun jargon and acronyms.",
+     "label": "ambiguous"
+    },
+    {
+     "text": "Prune every excess word.",
+     "label": "ambiguous"
+    }
+   ]
+  }
+ ]
+}

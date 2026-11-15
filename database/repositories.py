@@ -28,6 +28,10 @@ def users(ws):
     return db.fetch_all("SELECT * FROM users WHERE workspace_id = ? ORDER BY role, name", (ws,))
 
 
+def user_by_email(email):
+    return db.fetch_one("SELECT * FROM users WHERE lower(email) = lower(?)", (email,))
+
+
 def user(uid):
     return db.get("users", uid) if uid else None
 

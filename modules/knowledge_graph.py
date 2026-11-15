@@ -228,6 +228,8 @@ def layout(G, kind="force"):
         order = sorted(G["nodes"], key=lambda n: (LEVEL[n["kind"]], n["label"]))
         return {n["id"]: (math.cos(2 * math.pi * i / len(order)), math.sin(2 * math.pi * i / len(order)))
                 for i, n in enumerate(order)}
+    if kind == "radial":
+        return _radial(G)
     if kind == "grid":
         order = sorted(G["nodes"], key=lambda n: (LEVEL[n["kind"]], n["label"]))
         cols = max(1, math.ceil(math.sqrt(len(order) * 1.6)))
@@ -252,7 +254,7 @@ def _force(G, iters=220, seed=7):
     pos = {i: [rnd.uniform(-1, 1), rnd.uniform(-1, 1)] for i in ids}
     if n == 1:
         return {ids[0]: (0.0, 0.0)}
-    k = math.sqrt(4.0 / n)
+    k = 1.45 * math.sqrt(4.0 / n)   # generous spacing so labels have room
     t = 0.12
     adj = [(e["source"], e["target"]) for e in G["edges"]]
     for _ in range(iters):
@@ -286,3 +288,61 @@ def _force(G, iters=220, seed=7):
             pos[i][1] += dy / d * min(d, t)
         t *= 0.985
     return {i: (p[0], p[1]) for i, p in pos.items()}
+
+
+RING = {"product": 0.0, "document": 0.7, "rule": 1.4, "case": 1.8, "finding": 2.15, "decision": 2.55}
+
+
+def _radial(G):
+    """Concentric rings by record type (product in the middle, then documents, rules, test cases, findings, decisions).
+    A record sits at the angle of the rules it connects to, so related records line up along the same spoke."""
+    by_id = {n["id"]: n for n in G["nodes"]}
+    nbrs = defaultdict(set)
+    for e in G["edges"]:
+        nbrs[e["source"]].add(e["target"])
+        nbrs[e["target"]].add(e["source"])
+    ang = {}
+    rules = sorted((n for n in G["nodes"] if n["kind"] == "rule"), key=lambda n: n["label"])
+    for i, n in enumerate(rules):
+        ang[n["id"]] = 2 * math.pi * i / max(1, len(rules))
+
+    def mean_angle(ids):
+        pts = [ang[i] for i in ids if i in ang]
+        if not pts:
+            return None
+        return math.atan2(sum(math.sin(a) for a in pts), sum(math.cos(a) for a in pts)) % (2 * math.pi)
+
+    def spread(ids, base):
+        """Keep each record near its wished angle but never on top of its neighbour on the ring."""
+        want = sorted((ang.get(i, base.get(i, 0.0)) % (2 * math.pi), i) for i in ids)
+        if not want:
+            return
+        gap = min(2 * math.pi / len(want), 0.11)
+        out = []
+        for a, i in want:
+            out.append(max(a, out[-1] + gap) if out else a)
+        over = out[-1] - (out[0] + 2 * math.pi - gap)
+        if over > 0:   # ran past the full circle: spread evenly instead
+            out = [want[0][0] + 2 * math.pi * k / len(want) for k in range(len(want))]
+        for (a, i), v in zip(want, out):
+            ang[i] = v
+
+    docs = sorted((n for n in G["nodes"] if n["kind"] == "document"), key=lambda n: n["label"])
+    for i, n in enumerate(docs):   # documents touch most rules, so they are simply spaced evenly on the inner ring
+        ang[n["id"]] = math.pi / 6 + 2 * math.pi * i / max(1, len(docs))
+    for kind in ("case", "finding", "decision"):
+        group = [n["id"] for n in G["nodes"] if n["kind"] == kind]
+        wish = {}
+        for i in group:
+            m = mean_angle(nbrs[i])
+            if m is None:   # linked only to records on another ring: follow those
+                m = mean_angle([j for k in nbrs[i] for j in nbrs[k]]) or 0.0
+            wish[i] = m
+        ang.update(wish)
+        spread(group, wish)
+    pos = {}
+    for n in G["nodes"]:
+        r = RING[n["kind"]]
+        a = ang.get(n["id"], 0.0)
+        pos[n["id"]] = (r * math.cos(a) * 1.35, r * math.sin(a))
+    return pos

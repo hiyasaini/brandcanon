@@ -45,7 +45,8 @@ def ingest(ws, user_id, name, data, authority=None, title=None, use_ai=True):
     """
     require(user_id, "Brand Manager")
     ext = file_service.validate_upload(name, data)
-    pages = document_parser.parse(ext, data)
+    notes = []
+    pages = document_parser.parse(ext, data, notes)
     full = "\n".join(t for _, t in pages)
     if not full.strip():
         status = "empty"
@@ -116,7 +117,7 @@ def ingest(ws, user_id, name, data, authority=None, title=None, use_ai=True):
     return {"document_id": doc_id, "version_id": vid, "title": title, "status": status, "engine": engine, "ai_error": ai_error,
             "rules": len(rules), "facts": len(facts), "terms": n_terms, "passages": len(passages),
             "superseded_rules": superseded, "injection_flags": flags, "new_conflicts": new_conflicts,
-            "is_new_version": n_versions > 0}
+            "is_new_version": n_versions > 0, "notes": notes}
 
 
 def _json(d):

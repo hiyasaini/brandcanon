@@ -1,5 +1,7 @@
 """BrandCanon — brand intelligence workspace.  Run: streamlit run app.py"""
+import datetime
 import re
+import shutil
 import sqlite3
 import tempfile
 import time
@@ -13,7 +15,7 @@ st.set_page_config(page_title="BrandCanon · Brand Intelligence", page_icon="ass
 
 import config  # noqa: E402
 from database import db  # noqa: E402
-from modules import demo, notifications, queries as q  # noqa: E402
+from modules import demo, notifications, queries as q, session_token  # noqa: E402
 from services import gemini_service as gs  # noqa: E402
 from ui import (constitution, content_auditor, dashboard, decision_memory, governance, graph, help as help_page,  # noqa: E402
                 login, ruleprobe, search, styles, system, tour)
@@ -29,6 +31,15 @@ def _template_db():
     path = Path(tempfile.gettempdir()) / "brandcanon_template.db"
     for f in path.parent.glob(path.name + "*"):
         f.unlink()
+    shipped = config.ROOT / "assets" / "demo" / "demo_template.sqlite"   # pre-built by scripts/build_demo_template.py
+    try:
+        ver, schema, built = shipped.with_suffix(".stamp").read_text().strip().split("/")
+        fresh = (datetime.date.today() - datetime.date.fromisoformat(built)).days < 7
+        if shipped.exists() and (ver, schema) == (config.APP_VERSION, str(db.SCHEMA_VERSION)) and fresh:
+            shutil.copy(shipped, path)
+            return str(path)
+    except (OSError, ValueError):
+        pass   # fall through: build it
     ss["_db_path"] = str(path)
     db.reset_connections()
     db.init()
@@ -91,8 +102,18 @@ SETTINGS = [
 ]
 HIDDEN = [("search", "Search", ":material/search:", search.render)]
 
+# What each role can open. The module layer enforces the same limits, so this is not just cosmetic.
+ROLE_HIDES = {"Creator": {"ruleprobe", "governance"}, "Reviewer": {"governance"}, "Brand Manager": set()}
+
 # ---------------------------------------------------------------- sign-in gate (separate page, no sidebar)
 me = q.user(ss.get("uid")) if ss.get("uid") else None
+if not me and not ss.get("_no_restore"):   # a refresh starts a new session: sign the person back in from the cookie
+    try:
+        _tok = st.context.cookies.get(session_token.COOKIE)
+    except Exception:  # noqa: BLE001 - no cookie support in this context
+        _tok = None
+    if _tok and (_u := session_token.verify(_tok, q.user)):
+        ss.uid, me = _u["id"], _u
 if not me:
     ss.pop("uid", None)
     # Every app URL shows the sign-in page until someone signs in; afterwards the requested page opens.
@@ -101,10 +122,15 @@ if not me:
     st.navigation(gate, position="hidden").run()
     st.stop()
 
+if ss.pop("_set_cookie", False):
+    c.set_cookie(session_token.COOKIE, session_token.issue(me), session_token.LIFETIME)
+
 ws_row = next(w for w in q.list_workspaces() if w["id"] == me["workspace_id"])
 ss.ws, ss.ws_name = ws_row["id"], ws_row["name"]
 ss.user = {k: v for k, v in me.items() if k != "password_hash"}
 
+_hide = ROLE_HIDES.get(me["role"], set())
+PAGES = [x for x in PAGES if x[0] not in _hide]
 pages = [st.Page(fn, title=t, icon=i, url_path=u, default=(u == "overview")) for u, t, i, fn in PAGES + SETTINGS + HIDDEN]
 ss.pages = {p.url_path: p for p in pages}
 current = st.navigation(pages, position="hidden")
@@ -115,12 +141,37 @@ ICON = ('<svg viewBox="0 0 34 34" aria-hidden="true"><rect x="1" y="1" width="32
         '<circle cx="22" cy="22.5" r="3.2" fill="#B9CDBD"/><circle cx="11" cy="23" r="2.2" fill="#AD83EE"/></svg>')
 
 
-def _sign_out():
+def _sign_out(farewell=False):
     keep = {"tour": True} if ss.get("tour") else {}   # the guided demo continues after switching person
+    keep["_no_restore"] = True   # this session's cookie is stale once signed out
+    keep["_clear_cookie"] = True
+    if farewell:   # a deliberate sign-out ends on the "you've been signed out" screen
+        keep["_farewell"] = ss.get("user", {}).get("name", "").split(" ")[0]
     keep.update({k: ss[k] for k in ("_db_path", "_db_token") if k in ss})   # public mode: keep this visitor's database
     for k in list(ss.keys()):
         del ss[k]
     ss.update(keep)
+
+
+def _ask_out():
+    """Sign-out buttons only ask; the confirmation dialog does the signing out."""
+    ss["_ask_out"] = True
+    ss["_close_prof"] = True
+
+
+@st.dialog("Sign out of BrandCanon?", width="small")
+def _confirm_out():
+    st.markdown("You will return to the sign-in page. Anything already saved stays in the workspace; text you have typed but "
+                "not saved on this screen is lost.")
+    a, b = st.columns(2)
+    if a.button("Cancel", width="stretch", key="out_cancel"):
+        st.rerun()
+    if b.button("Sign out", type="primary", icon=":material/logout:", width="stretch", key="out_yes"):
+        _sign_out(farewell=True)
+        if config.google_signin_ready() and getattr(st.user, "is_logged_in", False):
+            st.logout()   # also ends the Google session in this browser; it reruns the app by itself
+        else:
+            st.rerun()
 
 
 def _switch_workspace():
@@ -204,7 +255,8 @@ with st.sidebar:
     with st.container(key="side-foot"):
         initials_ = "".join(w[0] for w in me["name"].split()[:2]).upper()
         st.markdown(f"<div class='bc-side-me'><div class='bc-avatar'>{esc(initials_)}</div><div><div class='n'>{esc(me['name'])}"
-                    f"</div><div class='r'>{esc(me['role'])} · {esc(ws_row['name'])}</div></div></div>", unsafe_allow_html=True)
+                    f"</div><div class='r'>{esc(me['role'])}</div><div class='r'>{esc(ws_row['name'])}</div></div></div>", unsafe_allow_html=True)
+        st.button("Sign out", icon=":material/logout:", on_click=_ask_out, key="side_out", width="stretch")
         st.fragment(_ai_card_live, run_every="2s" if gs.checking() else None)()
 
 
@@ -243,11 +295,15 @@ def topbar():
                 c.go("settings", set_tab="Profile & people", _close_prof=True)
             if st.button("Settings", icon=":material/tune:", type="tertiary", key="tb_set"):
                 c.go("settings", _close_prof=True)
-            st.button("Sign out", icon=":material/logout:", on_click=_sign_out, type="tertiary", key="tb_out")
+            st.button("Sign out", icon=":material/logout:", on_click=_ask_out, type="tertiary", key="tb_out")
 
 
 topbar()
 if ss.pop("_search_go", False):
     c.go("search")
 tour.bar(ws_row, me)
+if ss.pop("_ask_out", False):
+    _confirm_out()
+if ss.get("_land"):
+    c.go(ss.pop("_land"))
 current.run()

@@ -6,16 +6,16 @@ is used to audit content. It does not fetch web pages or research companies on i
 
 ## The workspace
 - **Sign in** first: choose the brand workspace and your name, then enter your password. In the fictional demo
-  workspace every person uses `novatech-demo`. **Create a workspace** on the sign-in page makes you its Brand Manager.
+  workspace every person uses `novatech-demo`. **Sign up** on the sign-in page is a three-step form (account, workspace, review) and makes you its Brand Manager. **Try the demo as Neha** signs in with one click.
 - **Top bar:** the BrandCanon logo, the **workspace selector** (choosing another workspace takes you to its sign-in),
   **global search** (type and press Enter — searches rules, documents and passages, product facts, audit findings,
   decisions and content), **notifications** (what needs your attention, from real records) and your **profile menu**
-  (Profile, Settings, Sign out).
+  (Profile, Settings, Sign out). Sign out is also at the foot of the sidebar; both ask you to confirm.
 - **Left sidebar** (collapsible with «; the » button brings it back and the workspace then uses the full width): Overview,
   Brand Constitution, RuleProbe, Content Auditor, Decision Memory, Governance Intelligence, Knowledge Graph, Settings and
   Help; at its foot, who is signed in and which AI engine is active.
 - In split workspaces (RuleProbe, Decision Memory) the side panels stay in view as you scroll the middle column.
-- Light screens use a sage frame and white cards; RuleProbe and the Knowledge Graph use the dark investigation design.
+- Every screen uses the same light design: a sage frame around a white workspace with rounded cards.
   Entity colours are the same everywhere: documents pink, rules turquoise, test cases yellow, findings coral,
   decisions lavender, products and campaigns mint.
 
@@ -58,7 +58,7 @@ conflicts, rules awaiting review, content awaiting approval, recurring problems)
 - **Product facts** and **Terminology** tabs hold numeric specifications (with qualifiers) and banned/preferred terms.
   Approving a document never approves its rules; extracted knowledge is never treated as approved automatically.
 
-## RuleProbe — test the logic behind your brand guidelines (dark workspace)
+## RuleProbe — test the logic behind your brand guidelines
 - **Left:** search rules, filter by **category**, **approval status** and **investigation type** (ambiguity,
   contradiction, missing guidance, model uncertainty, no issue found, not tested), choose the rule (◆ marks an earlier
   potential finding), see related rules.
@@ -116,11 +116,13 @@ Four metrics (recurring violations, unresolved ambiguities, source conflicts, **
 Chart colours are deeper, validated steps of the brand hues (checked for colour-blind and normal-vision separation),
 and every chart also labels its values, so colour is never the only cue.
 
-## Brand Knowledge Graph (dark workspace)
+## Brand Knowledge Graph
+
+Test cases start hidden because there are many of them (turn them on under **Entities**); records with no connection in the current view are left out, and the caption says how many. Documents and products carry a label tag.
 Every stored document, rule, test case, finding, decision and product/campaign as a node; every edge is a stored
 relationship (document contains rule, rule tested by test case, test case produces finding, finding contradicts or
 concerns a rule, finding supported by a document, finding resolved through a decision, decision applies to rule, about
-a product or campaign). Search, entity and relationship filters, four layouts (force-directed, circular, hierarchical,
+a product or campaign). Search, entity and relationship filters, five layouts (radial rings, force-directed, circular, hierarchical,
 grid), labels, **Focus on selection**, a legend, zoom (scroll or + / −), pan (drag) and reset (double-click). **Click a
 node** to see its stored fields and connections in the details panel, then open it in its own screen. Nodes grow with
 the number of records they connect to, and the tooltip gives the connection count. Before anything is selected, the
@@ -135,3 +137,34 @@ history), or *Gemini failed* (a red message says what failed; deterministic chec
   a key is configured — never the key — *Test Gemini connection*), accuracy on the labelled set, recorded test results,
   demo reset.
 - **Help & documentation:** a glossary of every finding type and these guides.
+
+
+## Round 3 features
+- **Health check (RuleProbe → Health check):** a Brand Manager runs one check that tests every testable rule and looks for
+  conflicts. The page then lists what to fix first (ambiguous rules with a proposed wording, open conflicts, contexts with no
+  rule), shows how each score is worked out, and downloads a Markdown or printable report.
+- **Visual review (Content Auditor → Visual review):** upload up to 8 images of a campaign, add alt text, and review them
+  together. Deterministic checks always run; with live Gemini each image is also examined and issues are boxed and numbered
+  on the picture. Download all issues as CSV.
+- **Accuracy benchmark (Settings → Accuracy):** precision, recall and F1 on hand-labelled items, per source, with one stored
+  result per app version, a built-in-vs-Gemini comparison for claim checks, and an importer for your own labelled sets.
+- **Google sign-in:** see docs/google_signin.md.
+
+## What each role sees
+| | Creator | Reviewer | Brand Manager |
+|---|---|---|---|
+| Overview, Brand Constitution (read), Content Auditor, Decision Memory, Knowledge Graph, Help | yes (Content Auditor shows only their own submissions) | yes | yes |
+| RuleProbe (test rules, send investigations for review) | no | yes | yes (and runs the health check) |
+| Review and decide on content | no | yes (escalations go to the Brand Manager) | yes |
+| Governance Intelligence | no | no | yes |
+| Approve/edit rules, upload documents, resolve conflicts | no | no | yes |
+| Settings: profile, AI and privacy | yes | yes | yes |
+| Settings: Accuracy, Test results | no | yes (view) | yes (import, remove) |
+| Settings: Demo reset, add people | no | no | yes |
+The module layer enforces the same limits, so hiding a screen is not the only protection.
+
+## Signing in, and staying signed in
+- The sign-in page lists the demo logins: "Try the demo as Neha", "As Kavya (Reviewer)", "As Priya (Creator)"; every demo person's
+  password is `novatech-demo`. It is a fictional brand.
+- A browser refresh keeps you signed in (8 hours). Sign out clears it.
+- Scanned PDFs are read with OCR and tables in PDFs keep their rows; the upload result tells you which pages were OCR'd.

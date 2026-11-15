@@ -1,4 +1,4 @@
--- BrandCanon relational schema (SQLite). Version 3 (v2: users.password_hash; v3: document review status, RuleProbe investigation states).
+-- BrandCanon relational schema (SQLite). Version 4 (v2: users.password_hash; v3: document review status, RuleProbe investigation states; v4: users.email for Google sign-in, benchmark tables).
 PRAGMA foreign_keys = ON;
 
 CREATE TABLE IF NOT EXISTS schema_version (version INTEGER NOT NULL, applied_at TEXT NOT NULL);
@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS users (
   name TEXT NOT NULL,
   role TEXT NOT NULL CHECK (role IN ('Creator', 'Reviewer', 'Brand Manager')),
   password_hash TEXT,
+  email TEXT,
   created_at TEXT NOT NULL,
   UNIQUE (workspace_id, name, role)
 );
@@ -330,5 +331,30 @@ CREATE INDEX IF NOT EXISTS ix_log_ws ON activity_log(workspace_id, created_at);
 CREATE TABLE IF NOT EXISTS llm_cache (
   key TEXT PRIMARY KEY,
   value TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+
+-- Measured accuracy benchmark: extra hand-labelled items a team imports (each tagged with where it came from), and one stored
+-- result per app version and engine so the history shows whether a release improved or regressed.
+CREATE TABLE IF NOT EXISTS eval_sets (
+  id INTEGER PRIMARY KEY,
+  workspace_id INTEGER NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  source TEXT NOT NULL,
+  kind TEXT NOT NULL CHECK (kind IN ('rules', 'pairs', 'claims')),
+  payload TEXT NOT NULL,
+  item_count INTEGER NOT NULL,
+  created_by INTEGER REFERENCES users(id),
+  created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS eval_runs (
+  id INTEGER PRIMARY KEY,
+  workspace_id INTEGER,
+  app_version TEXT NOT NULL,
+  engine TEXT NOT NULL,
+  item_counts TEXT NOT NULL,
+  metrics TEXT NOT NULL,
+  note TEXT,
   created_at TEXT NOT NULL
 );

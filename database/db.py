@@ -10,7 +10,7 @@ from datetime import datetime
 
 import config
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 _lock = threading.RLock()
 _local = threading.local()
 _columns = {}
@@ -71,12 +71,13 @@ def init():
     try:
         c = conn()
         with _lock:
-            c.executescript(config.SCHEMA_FILE.read_text())
+            c.executescript(config.SCHEMA_FILE.read_text(encoding="utf-8"))
             cur = c.execute("SELECT MAX(version) v FROM schema_version").fetchone()["v"]
             if cur is None:
                 c.execute("INSERT INTO schema_version(version, applied_at) VALUES (?, ?)", (SCHEMA_VERSION, now()))
             elif cur < SCHEMA_VERSION:
                 _migrate(c, cur)
+            c.execute("CREATE UNIQUE INDEX IF NOT EXISTS ux_users_email ON users(lower(email)) WHERE email IS NOT NULL")
             c.commit()
     except sqlite3.Error as e:
         raise DatabaseError(f"Could not initialise the database: {e}") from e
@@ -101,6 +102,9 @@ def _migrate(c, from_version):
         c.execute("UPDATE documents SET review_status = 'Archived' WHERE status = 'archived'")
         c.execute("UPDATE rule_tests SET investigation_state = CASE resolution WHEN 'keep' THEN 'approved' "
                   "WHEN 'clarify' THEN 'rule_updated' ELSE investigation_state END WHERE status = 'resolved'")
+    if from_version < 4:  # v4: users.email (Google sign-in); eval_sets / eval_runs come from schema.sql
+        if "email" not in {r["name"] for r in c.execute("PRAGMA table_info(users)").fetchall()}:
+            c.execute("ALTER TABLE users ADD COLUMN email TEXT")
     c.execute("INSERT INTO schema_version(version, applied_at) VALUES (?, ?)", (SCHEMA_VERSION, now()))
     _columns.clear()
 

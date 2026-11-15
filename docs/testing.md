@@ -2,7 +2,7 @@
 
 All results below come from real runs. `bash scripts/run_tests.sh` re-runs the mocked suite and overwrites `docs/test_results.txt`; `bash scripts/run_live_tests.sh` runs the live Gemini smoke tests and writes `docs/live_test_results.txt`.
 
-## Automated tests (pytest): 100 passed, 4 deselected
+## Automated tests (pytest): 111 passed, 4 deselected
 
 Each test uses its own temporary database. The mocked suite never contacts Gemini: Gemini is either forced off or replaced with fakes that return fixed JSON or raise the SDK's own error types. The 4 deselected tests are the live smoke tests, excluded from the default run. Full output: `docs/test_results.txt`.
 
@@ -200,7 +200,7 @@ Corrected text produced in step 10: *“NovaTech offers up to 12 hours of batter
 | 09 | PASS | knowledge category filter (Accessibility · 2) shows 2 items |
 | 10 | PASS | Show in graph opens the graph searched for that rule: 2 of 107 nodes  |
 | 11 | PASS | clicking a document node shows its stored record and connections |
-| 12 | PASS | all four layouts render (circular, hierarchical, grid, force-directed) |
+| 12 | PASS | all five layouts render (radial, circular, hierarchical, grid, force-directed) |
 | 13 | PASS | entity filter removes test cases from the graph |
 | 14 | PASS | focus on selection: 22 of 107 nodes  |
 | 15 | PASS | node 'Open' navigates to the record's screen |
@@ -210,7 +210,7 @@ Corrected text produced in step 10: *“NovaTech offers up to 12 hours of batter
 | 19 | PASS | investigation map: clicking a node opens its record (Document) |
 | 20 | PASS | Save investigation records the state |
 | 21 | PASS | Generate test cases discards edits and regenerates the controlled examples |
-| 22 | PASS | Conflicts, Missing guidance and Test history tabs render in the dark workspace |
+| 22 | PASS | Conflicts, Missing guidance and Test history tabs render |
 | 23 | PASS | Governance: the six charts render (findings over time, issue categories, root causes, findings by channel, violated rules, reviewer decisions); 'Where to act' opens RuleProbe → Conflicts |
 | 24 | PASS | Settings and Help render; profile menu opens Settings |
 | 25 | PASS | a DOCX is loaded into the content editor |
@@ -285,7 +285,7 @@ All 12 checks passed, with no JavaScript errors:
 | Brand Manager adds a person with a password (Settings → Profile & people) | PASS |
 | Deterministic audit labelled *Deterministic logic* | PASS |
 | Deep link while signed out → sign-in page, then the requested page | PASS |
-| Sign out returns to the sign-in page | PASS |
+| Sign out asks for confirmation, then shows "You’ve been signed out" and Sign in again returns to the sign-in form | PASS |
 | Newly added person signs in | PASS |
 | `AI_PROVIDER=gemini` with a fake key: the app checks the connection **by itself** at start-up and the sidebar shows *Gemini selected · connection failed* (no button pressed) | PASS |
 | Audit with Gemini unreachable: red *Gemini did not produce this result … network error*; deterministic findings still shown and labelled | PASS |
@@ -327,3 +327,40 @@ Recomputed after the final change; unchanged. The set is small, was written by t
 - **Screen readers and mobile layouts:** contrast was checked against WCAG AA and the sign-in page was viewed at phone width, but
   no screen reader was used and the workspace screens are designed for desktop (the knowledge graph is mouse-driven).
 - **User testing:** no sessions with real marketing teams have been run yet (planned for Round 2 in the Round 1 document).
+
+## 4e. Sign-up, sign-out and one-click demo (browser, 17 checks, all PASS)
+Run against a fresh app: the 3-step sign-up (short and mismatching passwords blocked, live checklist, taken brand name flagged,
+Back keeps what was typed, summary, workspace created), sign-in as the new Brand Manager, sign-out from the sidebar and from the
+top-bar menu (confirmation dialog, Cancel keeps the session, signed-out screen, Sign in again), signing in again with the new
+password, and "Try the demo as Neha". Animations are CSS only and are switched off when the device asks for reduced motion.
+
+## 4f. Round 3 features (browser, 18 checks, all PASS) and what was not verified live
+Run against a fresh app: sidebar person card / Sign out / AI card spacing (10 px and 16 px gaps), Google buttons absent
+without credentials, **Health check** (ranked list, proposed wordings, Markdown and printable report downloads, jump to the
+rule), **Accuracy benchmark** (stored release row, Gemini comparison message, bad import refused with the reason, imported
+set scored separately, score again, remove with confirmation), **Visual review** (three images in one summary, per-image issues
+with their source, deterministic-only notice, CSV download). Unit tests cover Google account rules (case-insensitive e-mail,
+unknown e-mail refused, duplicate e-mail refused, Google-only person), the Google-buttons-need-all-credentials rule, the
+health-check ranking and report, and Gemini Vision output validation (invented rule codes dropped, out-of-image boxes
+dropped, text read from the image judged by the built-in claim checker, failures raised rather than hidden).
+
+**Not verified live (needs your keys):** Google sign-in against a real Google account, and Gemini Vision / the Gemini claim
+comparison against the real API. Both are exercised with simulated responses and with placeholder credentials only.
+
+
+## 4g. Final-round hardening (browser)
+Checks run against a fresh app: every screen opens in an empty workspace with no error; a text-file-as-PDF, an empty PDF, a
+truncated PDF and a `.txt` file are refused or reported with a plain message; a PDF with a table keeps its rows; a scanned PDF
+is read by OCR and says so; refresh keeps the person signed in on the Overview, Brand Constitution, Content Auditor and
+Knowledge Graph screens, and sign-out followed by refresh shows the sign-in page; the Content Auditor accepts empty text (button
+disabled), whitespace, `<script>` text, emoji and Hindi text, and 60,000 characters; global search accepts empty, SQL-looking,
+`%%%`, 500-character and HTML input; a double-click on Submit does not break. Roles: Creator, Reviewer and Brand Manager see
+different sidebars and Settings tabs.
+
+## 4h. Interface polish pass
+Browser-checked: investigation list rows keep an even gap; selected document card is a soft highlight, not a black border; the
+divergence grid shows Pass / Fail words, not glyphs; the profile menu opens under the Profile button at the right edge; the
+decision detail panel is a light sage surface; cards, rows and expanders lift softly on hover; health-check and audit reports
+download as PDF, Markdown and (health check) printable page. Start-up: the demo workspace ships pre-built
+(`scripts/build_demo_template.py`, used while under 7 days old and matching the version), and the render-blocking font import
+was removed; first visit locally went from about 5.2 s to 2.1 s.

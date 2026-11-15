@@ -43,7 +43,7 @@
     migration, not a secure activation flow.
   - Demo accounts share a published password.
 - **Single-instance storage:** SQLite on one machine. On Streamlit Community Cloud the database is temporary.
-- **Evaluation set:** the labelled set is small (50 items), was written by the team, and is for a fictional brand. It is an early signal; see Settings → Accuracy.
+- **Evaluation set:** 344 labelled items: 50 written by the team for the fictional NovaTech brand and 294 sentences from three real public style guides (Mailchimp, GOV.UK, Microsoft). The real-guideline items are rules only (clear or ambiguous): there are no real conflicts or product claims in them. Labels were assigned by Claude for the team and need human review; see Settings → Accuracy.
 - **Not verified:** no enterprise security or compliance certification is claimed.
 
 ## Interface
@@ -63,3 +63,24 @@
   the deterministic checks still run.
 - Free Streamlit Community Cloud apps sleep after a period without visitors; the first visit after that takes about a
   minute to wake.
+
+
+## Round 3 additions: what they do not do
+- **Visual & accessibility review** needs live Gemini for anything beyond the deterministic checks. Gemini's observations
+  (layout, in-image text, accessibility) are labelled as observations; contrast figures are measured only by the built-in check.
+  Images are sent to Google's Gemini API when it is on. Results are shown, not stored.
+- **Health check** ranks stored RuleProbe results; it is only as current as the last run. The priority score is a visible
+  sum, not a verdict that a rule is wrong. Proposed wordings come from RuleProbe (or Gemini) and need a person to accept them.
+- **Accuracy benchmark:** 294 rule sentences from three real public style guides are scored on top of the 50 NovaTech items, so 344 in all, short of the 300 real items promised only by six. Conflict and claim checks are scored on the 30 NovaTech items only, because real public guidelines contain no product facts to check claims against and no genuine contradictions to label. On the real guidelines the built-in ambiguity check has high precision but low recall (it misses most ambiguous rules); the Gemini comparison covers claim checking only, so Gemini's rule classification is not yet measured. Labels are a judgement call (rubric in Settings → Accuracy).
+- **Google sign-in** needs your own Google OAuth client and Streamlit secrets (docs/google_signin.md) and has not been run
+  against a real Google account in the test runs. The buttons stay hidden until it is configured.
+
+## Reading scanned PDFs
+Scanned pages are read with OCR (Tesseract). It is installed on Streamlit Community Cloud through `packages.txt`; on your own
+machine install it (`brew install tesseract` or `apt install tesseract-ocr`). Without it, scanned pages are reported as not
+read. OCR can misread characters, so the app says which pages were read this way. Tables in PDFs keep their rows (`a | b | c`),
+but merged cells and tables drawn as images are not understood.
+
+## Staying signed in after a refresh
+A signed cookie (8 hours, cleared on sign-out) restores the session. It needs the signing key to survive: if the server
+restarts and loses `data/.session_key`, people are asked to sign in again.

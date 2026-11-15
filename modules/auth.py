@@ -84,6 +84,12 @@ def activate(user_id, password, confirm):
     return public(u)
 
 
+def workspace_name_taken(brand) -> bool:
+    """True when a workspace with this exact name exists (used for the inline check on the sign-up page)."""
+    brand = (brand or "").strip()
+    return bool(brand and db.fetch_one("SELECT id FROM workspaces WHERE name = ?", (brand,)))
+
+
 def create_workspace(brand, owner_name, password, confirm):
     """New workspace with its first Brand Manager. Returns the signed-in user."""
     brand, owner_name = (brand or "").strip(), (owner_name or "").strip()
@@ -101,7 +107,49 @@ def create_workspace(brand, owner_name, password, confirm):
     return public(repo.user(uid))
 
 
-def add_person(ws, actor_id, name, role, password):
+def _clean_email(email):
+    email = (email or "").strip().lower()
+    if not email:
+        return None
+    if "@" not in email or email.startswith("@") or email.endswith("@") or " " in email:
+        raise AuthError("Enter a valid e-mail address.")
+    return email
+
+
+def find_by_email(email):
+    """The person whose Google account uses this e-mail, or None (matched case-insensitively)."""
+    email = _clean_email(email)
+    return repo.user_by_email(email) if email else None
+
+
+def sign_in_google(email):
+    """Sign in a person whose Google account was already verified by Google. Only people a Brand Manager added (or who
+    created a workspace with Google) can sign in; an unknown e-mail never creates an account here."""
+    u = find_by_email(email)
+    if not u:
+        raise AuthError("No BrandCanon account uses this Google e-mail yet.")
+    repo.log(u["workspace_id"], u["id"], "Signed in with Google")
+    return public(u)
+
+
+def create_workspace_google(brand, owner_name, email):
+    """New workspace whose first Brand Manager signs in with Google (no password is stored for this account)."""
+    brand, owner_name, email = (brand or "").strip(), (owner_name or "").strip(), _clean_email(email)
+    if not brand or not owner_name or not email:
+        raise AuthError("Enter the brand name; your name and e-mail come from Google.")
+    if find_by_email(email):
+        raise AuthError("An account already uses this Google e-mail. Sign in instead.")
+    if db.fetch_one("SELECT id FROM workspaces WHERE name = ?", (brand,)):
+        raise AuthError("A workspace with this name already exists. Ask its Brand Manager to add you.")
+    ws = repo.get_or_create_workspace(brand)
+    uid = repo.get_or_create_user(ws, owner_name, "Brand Manager")
+    db.update("users", uid, email=email)
+    repo.log(ws, uid, "Created workspace (Google)", "workspace", ws, brand)
+    return public(repo.user(uid))
+
+
+def add_person(ws, actor_id, name, role, password, email=None):
+    """Add a person. They sign in with a password, with Google (give their Google e-mail), or both."""
     require(actor_id, "Brand Manager")
     name = (name or "").strip()
     if not name:
@@ -110,9 +158,16 @@ def add_person(ws, actor_id, name, role, password):
         raise AuthError("Choose a role.")
     if db.fetch_one("SELECT id FROM users WHERE workspace_id = ? AND name = ? AND role = ?", (ws, name, role)):
         raise AuthError(f"{name} already has the {role} role here.")
-    check_strength(password)
+    email = _clean_email(email)
+    if email and find_by_email(email):
+        raise AuthError("Another account already uses this e-mail.")
+    if password or not email:   # a password is optional only when the person will use Google
+        check_strength(password)
     uid = repo.get_or_create_user(ws, name, role)
-    db.update("users", uid, password_hash=hash_password(password))
+    fields = {"email": email} if email else {}
+    if password:
+        fields["password_hash"] = hash_password(password)
+    db.update("users", uid, **fields)
     repo.log(ws, actor_id, "Added person", "user", uid, f"{name} ({role})")
     return uid
 

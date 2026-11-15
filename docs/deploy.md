@@ -74,3 +74,10 @@ by itself.
 
 Quick tunnels need no account, have no uptime guarantee and allow up to 200 requests in flight at once — fine for a
 judging session, not for permanent hosting.
+
+## Files Streamlit Community Cloud reads
+- `requirements.txt`: Python packages (includes `Authlib` for Google sign-in).
+- `packages.txt`: system packages. It lists `tesseract-ocr`, which lets the app read scanned PDFs. Without it everything else
+  works and scanned pages are reported as not read.
+- Secrets (Settings → Secrets, never in GitHub): `GEMINI_API_KEY`, `AI_PROVIDER`, and the `[auth]` blocks for Google sign-in
+  (`docs/google_signin.md`).
